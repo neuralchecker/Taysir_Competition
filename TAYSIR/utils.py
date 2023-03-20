@@ -74,6 +74,26 @@ def test_model(target_model, model, sequence_length = 100, sequence_amount = 100
         results.append(target_model.process_query(sequence) == model.process_query(sequence))
     
     return results
+
+    
+def test_model_w_data(target_model, model, sequences):
+    results = []
+    
+    for sequence in sequences:
+            sequence = transform_sequence(sequence)
+            results.append(target_model.process_query(sequence) == model.process_query(sequence))
+            
+    return results
+        
+from pythautomata.base_types.sequence import Sequence
+from pythautomata.base_types.symbol import SymbolStr
+
+def transform_sequence(seq):
+    symbol_list = []
+    for symbol in seq:
+        symbol_list.append(SymbolStr(str(symbol)))
+        
+    return Sequence(symbol_list)
     
     
     
