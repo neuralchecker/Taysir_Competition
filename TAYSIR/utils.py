@@ -6,6 +6,8 @@ def predict(sequence, model):
     
     #For instance, if you want to submit the original model:
     if hasattr(model, 'predict'): #RNN
+        if len(sequence) == 0:
+            return False
         value = model.predict(model.one_hot_encode(sequence)) 
         return value
     else: #Transformer
