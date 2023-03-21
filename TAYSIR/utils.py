@@ -84,7 +84,7 @@ def test_model_w_data(target_model, model, sequences):
     
     for sequence in sequences:
             sequence = transform_sequence(sequence)
-            results.append(model.process_query(sequence) != target_model.process_query(sequence))
+            results.append(model.process_query(sequence) == target_model.process_query(sequence))
             
     return results
         
