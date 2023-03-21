@@ -37,6 +37,8 @@ class PytorchInference(Model):
     
     def __init__(self, alphabet, model, name = "Pytorch NN"):
         self._alphabet = alphabet
+        #2 is the ammount of symbols to represent empty sequence
+        self._alphabet_len = len(alphabet) + 2
         self._model = model
         self._name = name
         
@@ -57,9 +59,10 @@ class PytorchInference(Model):
         return predict(adapted_sequence, self._model) == 1
     
     def _adapt_sequence(self, sequence):
-        adapted_seq = []
+        adapted_seq = [self._alphabet_len-1]
         for symbol in sequence.value:
             adapted_seq.append(int(symbol.value))
+        adapted_seq.append(self._alphabet_len)
         
         return adapted_seq
     
@@ -81,7 +84,7 @@ def test_model_w_data(target_model, model, sequences):
     
     for sequence in sequences:
             sequence = transform_sequence(sequence)
-            results.append(target_model.process_query(sequence) == model.process_query(sequence))
+            results.append(model.process_query(sequence) != target_model.process_query(sequence))
             
     return results
         
@@ -89,6 +92,8 @@ from pythautomata.base_types.sequence import Sequence
 from pythautomata.base_types.symbol import SymbolStr
 
 def transform_sequence(seq):
+    #take out padding symbols
+    seq = seq[1:-1]
     symbol_list = []
     for symbol in seq:
         symbol_list.append(SymbolStr(str(symbol)))
