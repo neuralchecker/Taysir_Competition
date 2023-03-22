@@ -19,7 +19,7 @@ class func_to_class(mlflow.pyfunc.PythonModel):
 
 
 def save_function(func, alphabet_size, prefix):
-    print('Testing function...')
+    #print('Testing function...')
     alphabet = list(range(0, alphabet_size))
     sample_input = choices(alphabet, k=25)
     output = func.predict(sample_input)
@@ -28,9 +28,9 @@ def save_function(func, alphabet_size, prefix):
     except ValueError:
         raise ValueError(
             f'The output should be an integer or a float, but we found a {type(output).__name__}')
-    print('Test  passed.')
+    #print('Test  passed.')
 
-    print('Creating submission...')
+    #print('Creating submission...')
     with tempfile.TemporaryDirectory() as tmp_dir:
         mlflow_path = Path(tmp_dir)
         zip_path = f"predicted_models/{prefix}.zip"
@@ -48,4 +48,4 @@ def save_function(func, alphabet_size, prefix):
                 if f.is_file():
                     zip_file.write(f, f.relative_to(mlflow_path))
     print(f'Submission created at {zip_path}.')
-    print('You can now submit your model on the competition website.')
+    #print('You can now submit your model on the competition website.')

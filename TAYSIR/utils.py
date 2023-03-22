@@ -82,7 +82,7 @@ def test_model(target_model, model, sequence_length = 100, sequence_amount = 100
 def test_model_w_data(target_model, model, sequences):
     results = []
     
-    for sequence in sequences:
+    for sequence in enumerate(sequences):
             sequence = transform_sequence(sequence)
             results.append(model.process_query(sequence) == target_model.process_query(sequence))
             
