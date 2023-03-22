@@ -38,7 +38,7 @@ class PytorchInference(Model):
     def __init__(self, alphabet, model, name = "Pytorch NN"):
         self._alphabet = alphabet
         #2 is the ammount of symbols to represent empty sequence
-        self._alphabet_len = len(alphabet) + 2
+        self._alphabet_len = len(alphabet) + 1
         self._model = model
         self._name = name
         
