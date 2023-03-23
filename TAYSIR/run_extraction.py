@@ -5,8 +5,8 @@ import sys
 import pandas as pd
 from transformers import AutoTokenizer, DistilBertForSequenceClassification
 import numpy as np
-from mlflow_exporter.wrapper import MlflowDFA
-from mlflow_exporter.submit_tools_fix import save_function
+from wrapper import MlflowDFA
+from submit_tools_fix import save_function
 from pymodelextractor.teachers.pac_comparison_strategy import PACComparisonStrategy
 from pymodelextractor.teachers.general_teacher import GeneralTeacher
 from pymodelextractor.factories.lstar_factory import LStarFactory

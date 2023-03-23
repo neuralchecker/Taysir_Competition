@@ -2,7 +2,7 @@ import zipfile
 import time
 import tempfile
 import logging
-from pathlib import Path
+from pathlib import Path, PosixPath
 from random import choices
 
 import mlflow
@@ -33,10 +33,12 @@ def save_function(func, alphabet_size, prefix):
     #print('Creating submission...')
     with tempfile.TemporaryDirectory() as tmp_dir:
         mlflow_path = Path(tmp_dir)
+        
         zip_path = f"predicted_models/{prefix}.zip"
 
         code_paths = list(Path().rglob('*.py'))
-
+        #code_paths = [PosixPath('wrapper.py')]
+          
         mlflow.pyfunc.save_model(
             path=mlflow_path,
             python_model=func_to_class(func),
