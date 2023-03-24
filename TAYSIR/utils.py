@@ -68,8 +68,9 @@ class PytorchInference(Model):
     
 from pythautomata.utilities.uniform_length_sequence_generator import UniformLengthSequenceGenerator
 
-def test_model(target_model, model, sequence_length = 100, sequence_amount = 10000):
-    sequence_generator = UniformLengthSequenceGenerator(model.alphabet, sequence_length)
+def test_model(target_model, model, max_seq_len = 100, sequence_amount = 10000, min_seq_len=50):
+    sequence_generator = UniformLengthSequenceGenerator(model.alphabet, max_seq_length=max_seq_len, 
+                                                        random_seed=117, min_seq_length=min_seq_len)
     sequences = sequence_generator.generate_words(sequence_amount)
     
     results = []
