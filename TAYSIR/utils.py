@@ -43,7 +43,7 @@ class PytorchInference(Model):
         self._name = name
         
     @property
-    def name(self) -> Alphabet:
+    def name(self) -> str:
         return self._name
     
     @property
