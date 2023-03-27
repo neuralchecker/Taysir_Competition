@@ -30,13 +30,13 @@ max_query_length = 1000
 for ds in range(dataset_amount):
     DATASET = ds + 1
 
-    model_name = f"models/1.{DATASET}.taysir.model"
+    model_name = f"models/2.{DATASET}.taysir.model"
     model = mlflow.pytorch.load_model(model_name)
     model.eval()
     
     from pythautomata.base_types.alphabet import Alphabet
 
-    file = f"datasets/1.{DATASET}.taysir.valid.words"
+    file = f"datasets/2.{DATASET}.taysir.valid.words"
 
     alphabet = None
     sequences = []
