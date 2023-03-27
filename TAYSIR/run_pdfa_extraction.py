@@ -22,6 +22,10 @@ tested_results = []
 max_extraction_time = 60
 max_sequence_len = 1000
 min_sequence_len = 500
+
+max_sequence_len_transformer = 500
+min_sequence_len_transformer = 100
+
 epsilon = 0.01
 delta = 0.01
 max_states = 10000
@@ -57,8 +61,12 @@ for ds in range(dataset_amount):
         
     name = "Track: " + str(TRACK) + " - DataSet: " + str(DATASET)
     target_model = PytorchLanguageModel(alphabet, model, name)
-    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
-                                                        min_seq_length=min_sequence_len)
+    if DATASET == 10:        
+      sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len_transformer,
+                                                        min_seq_length=min_sequence_len_transformer)
+    else:
+      sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
+                                                        min_seq_length=min_sequence_len)  
     partitioner = QuantizationProbabilityPartitioner(10)
     comparator = WFAPartitionComparator(partitioner)
     
