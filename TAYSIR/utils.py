@@ -26,10 +26,10 @@ def predict(sequence, model):
             return (out.logits.argmax().item())
 
 def full_next_symbols_probas(sequence, model):      
-    try: #RNN
+    if not hasattr(model, 'distilbert')
         value, hiddens = model.forward_lm(model.one_hot_encode(sequence))
         return value.detach().numpy()
-    except: #Transformer
+    else: #Transformer
         def make_future_masks(words:torch.Tensor):
             masks = (words != 0)
             b,l = masks.size()
