@@ -26,7 +26,7 @@ def predict(sequence, model):
             return (out.logits.argmax().item())
 
 def full_next_symbols_probas(sequence, model):      
-    if not hasattr(model, 'distilbert')
+    if not hasattr(model, 'distilbert'):
         value, hiddens = model.forward_lm(model.one_hot_encode(sequence))
         return value.detach().numpy()
     else: #Transformer
