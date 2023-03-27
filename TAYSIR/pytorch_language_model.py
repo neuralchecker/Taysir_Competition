@@ -45,6 +45,9 @@ class PytorchLanguageModel(ProbabilisticModel):
         result = self.process_query(sequence)        
         return result 
 
+    def _get_symbol_index(self, symbol):
+        return int(symbol.value)
+
     def next_symbol_probas(self, sequence: Sequence):
         """
         Function that returns a dictionary with the probability of next symbols (not including padding_symbol)
