@@ -25,6 +25,47 @@ def predict(sequence, model):
             out = model(word)
             return (out.logits.argmax().item())
 
+def full_next_symbols_probas(sequence, model):      
+    try: #RNN
+        value, hiddens = model.forward_lm(model.one_hot_encode(sequence))
+        return value.detach().numpy()
+    except: #Transformer
+        def make_future_masks(words:torch.Tensor):
+            masks = (words != 0)
+            b,l = masks.size()
+            #x = einops.einsum(masks, masks, "b i, b j -> b i j")
+            x = torch.einsum("bi,bj->bij",masks,masks)
+            x *= torch.ones(l,l, dtype=torch.bool, device=x.device).tril()
+            x += torch.eye(l,dtype=torch.bool, device=x.device)
+            return x.type(torch.int8)
+        def predict_next_symbols(model, word):
+            """
+            Args:
+                whole word (list): a complete sequence as a list of integers
+            Returns:
+                the predicted probabilities of the next ids for all prefixes (2-D ndarray)
+            """
+            word = [ [ a+1 for a in word ] ]
+            word = torch.IntTensor(word)
+            model.eval()
+            with torch.no_grad():
+                attention_mask = make_future_masks(word)
+                out = model.forward(word, attention_mask=attention_mask)
+                out = torch.nn.functional.softmax(out.logits[0], dim=1)
+                return out.detach().numpy()[:, 1:] #  the probabilities for padding id (0) are removed        
+        return predict_next_symbols(model, sequence[:-1])
+
+def next_symbols_probas(sequence, model):   
+    return full_next_symbols_probas(sequence, model)[-1]
+
+import numpy as np
+def sequence_probability(sequence, model):
+    probs = full_next_symbols_probas(sequence, model)
+    print(probs)
+    print(list(enumerate(sequence[1:])))
+    probas_for_word = [probs[i,a] for i,a in enumerate(sequence)]
+    value = np.array(probas_for_word).prod()
+    return float(value)
 # We define a class in order to get alphabet, output alphabet and proccess query of PyTorch RNN. 
 # After this we send the model to the generic LStar teacher.
 
