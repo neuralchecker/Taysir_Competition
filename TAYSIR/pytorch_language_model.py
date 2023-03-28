@@ -3,6 +3,8 @@ from pythautomata.base_types.sequence import Sequence
 from pythautomata.base_types.alphabet import Alphabet
 from pythautomata.base_types.symbol import SymbolStr
 
+from typing import List
+from collections import defaultdict
 import utils
 
 import numpy as np
@@ -96,3 +98,56 @@ class PytorchLanguageModel(ProbabilisticModel):
                 next_symbol_weights = self.next_symbol_probas(new_prefix)
                 weights.append(next_symbol_weights[new_suffix])
         return weights
+    
+    def get_last_token_weights_batch(self, sequences, required_suffixes):
+        seqs_to_query = set()
+        symbols = list(self.alphabet.symbols) + [self._terminal_symbol]
+        for seq in sequences:
+            for required_suffix in required_suffixes:
+                if required_suffix not in symbols and len(required_suffix)>1:
+                    seqs_to_query.add(seq+required_suffix[:-1])
+                else:
+                    seqs_to_query.add(seq)
+
+        result_dict = self.raw_eval_batch(list(seqs_to_query))
+        #result_dict = dict(zip(seqs_to_query, query_results))
+        results = []
+        for seq in sequences:
+            seq_result = []
+            for required_suffix in required_suffixes:
+                if required_suffix not in symbols and len(required_suffix)>1:
+                    seq_result.append(result_dict[seq+required_suffix[:-1]][required_suffix[-1]])
+                else:
+                    if required_suffix not in symbols:
+                        required_suffix = SymbolStr(required_suffix.value[0].value)
+                    seq_result.append(result_dict[seq][self._get_symbol_index(required_suffix)])
+            results.append(seq_result)
+        
+        return results
+    
+    def raw_eval_batch(self, sequences: List[Sequence]):
+        if not hasattr(self, '_model'):
+            raise AttributeError
+
+        sequences_by_length = defaultdict(lambda: [])
+        for seq in sequences:
+            sequences_by_length[len(seq)].append(seq)            
+        query_results = []
+        seqs_to_query = []
+        for length in sequences_by_length:            
+            seqs =  sequences_by_length[length]
+            adapted_sequences = list(map(lambda x: self._adapt_sequence(x), seqs))       
+                        
+            adapted_sequences_np = np.asarray(adapted_sequences)
+
+            if length == 1:
+                adapted_sequences_np = adapted_sequences_np.reshape((-1, 1, len(adapted_sequences_np[0]))) 
+            if length == 0:                
+                seqs = [Sequence() for i in seqs]
+
+            model_evaluation = utils.full_next_symbols_probas_batch(adapted_sequences_np, self._model)
+            seqs_to_query.extend(seqs)
+            query_results.extend(model_evaluation)
+
+        result_dict = dict(zip(seqs_to_query, query_results))            
+        return result_dict

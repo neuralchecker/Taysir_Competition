@@ -55,6 +55,39 @@ def full_next_symbols_probas(sequence, model):
                 return out.detach().numpy()[:, 1:] #  the probabilities for padding id (0) are removed        
         return predict_next_symbols(model, sequence[:-1])
 
+def full_next_symbols_probas_batch(sequences, model):      
+    if not hasattr(model, 'distilbert'):
+        sequences = torch.stack(list(map(lambda x: model.one_hot_encode(x), sequences)))             
+        value, hiddens = model.forward_lm(sequences)        
+        return value.detach().numpy()[:, :, 1:]
+        
+    else: #Transformer
+        def make_future_masks(words:torch.Tensor):
+            masks = (words != 0)
+            b,l = masks.size()
+            #x = einops.einsum(masks, masks, "b i, b j -> b i j")
+            x = torch.einsum("bi,bj->bij",masks,masks)
+            x *= torch.ones(l,l, dtype=torch.bool, device=x.device).tril()
+            x += torch.eye(l,dtype=torch.bool, device=x.device)
+            return x.type(torch.int8)
+        def predict_next_symbols(model, words):
+            """
+            Args:
+                whole word (list): a complete sequence as a list of integers
+            Returns:
+                the predicted probabilities of the next ids for all prefixes (2-D ndarray)
+            """
+            words = [ [ a+1 for a in word ] for word in words]
+            words = torch.IntTensor(words)
+            model.eval()
+            with torch.no_grad():
+                attention_mask = make_future_masks(words[0])
+                out = model.forward(words, attention_mask=attention_mask)
+                out = torch.nn.functional.softmax(out.logits[0], dim=1)
+                return out.detach().numpy()[:,:,1:] #  the probabilities for padding id (0) are removed        
+        return predict_next_symbols(model, sequences[:,:-1])
+
+
 def next_symbols_probas(sequence, model):   
     return full_next_symbols_probas(sequence, model)[-1]
 

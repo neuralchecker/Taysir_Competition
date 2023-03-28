@@ -11,6 +11,7 @@ from pdfa_wrapper import MlflowPDFA
 from submit_tools_fix import save_function
 
 from utils import test_model
+import metrics
 
 # Ignore warnings
 import warnings
@@ -74,7 +75,13 @@ for ds in range(dataset_amount):
     learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = False, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False)
 
     res = learner.learn(teacher)    
+    print("DATASET: " + str(DATASET) + " learned with " + str(res.info['equivalence_queries_count']) + 
+          " equivalence queries and " + str(res.info['last_token_weight_queries_count']) + "membership queries"+
+          " with " + str(len(res.model.states)) + " states")
     
     mlflow_dfa = MlflowPDFA(res.model)
     save_function(mlflow_dfa, len(res.model.alphabet), target_model.name)
+    
+    test_sequences = sequence_generator.generate_words(1000)
+    print(metrics.compute_stats(target_model, res.model,partitioner, test_sequences))
     
