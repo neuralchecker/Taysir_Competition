@@ -88,7 +88,7 @@ def full_next_symbols_probas_batch(sequences, model):
         return predict_next_symbols(model, sequences[:,:-1])
 
 
-def next_symbols_probas(sequence, model):   
+def next_symbols_probas(sequence, model):     
     return full_next_symbols_probas(sequence, model)[-1]
 
 import numpy as np

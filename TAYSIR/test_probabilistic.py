@@ -4,85 +4,69 @@ print('PyTorch version :', torch.__version__)
 print('MLflow version :', mlflow.__version__)
 import sys
 print("Your python version:", sys.version)
+from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
+from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
+#from pythautomata.model_exporters.wfa_image_exporter_with_partition_mapper import WFAImageExporterWithPartitionMapper
+from pythautomata.base_types.symbol import SymbolStr
+from pythautomata.utilities.uniform_length_sequence_generator import UniformLengthSequenceGenerator
+from pythautomata.base_types.alphabet import Alphabet
 
-def predict(sequence, model):
-    """ Define the function that takes a sequence as a list of integers and return the decision of your extracted model. 
-    The function does not need your model as argument. See baseline notebooks for examples."""
-    
-    #For instance, if you want to submit the original model:
-    try: #RNN
-        value = model.predict(model.one_hot_encode(sequence)) 
-        return value
-    except: #Transformer
-        def make_future_masks(words:torch.Tensor):
-            masks = (words != 0)
-            b,l = masks.size()
-            #x = einops.einsum(masks, masks, "b i, b j -> b i j")
-            x = torch.einsum("bi,bj->bij",masks,masks)
-            x *= torch.ones(l,l, dtype=torch.bool, device=x.device).tril()
-            x += torch.eye(l,dtype=torch.bool, device=x.device)
-            return x.type(torch.int8)
-        import numpy
-        def predict_next_symbols(model, word):
-            """
-            Args:
-                whole word (list): a complete sequence as a list of integers
-            Returns:
-                the predicted probabilities of the next ids for all prefixes (2-D ndarray)
-            """
-            word = [ [ a+1 for a in word ] ]
-            word = torch.IntTensor(word)
-            model.eval()
-            with torch.no_grad():
-                attention_mask = make_future_masks(word)
-                out = model.forward(word, attention_mask=attention_mask)
-                out = torch.nn.functional.softmax(out.logits[0], dim=1)
-                return out.detach().numpy()[:, 1:] #  the probabilities for padding id (0) are removed
-        def predict_transformer(model, word):
-            probs = predict_next_symbols(model, word[:-1])
-            probas_for_word = [probs[i,a] for i,a in enumerate(word[1:])]
-            value = numpy.array(probas_for_word).prod()
-            return float(value)
-        return predict_transformer(model, sequence)
+from pymodelextractor.learners.observation_tree_learners.bounded_pdfa_quantization_n_ary_tree_learner import BoundedPDFAQuantizationNAryTreeLearner
+from pymodelextractor.teachers.pac_batch_probabilistic_teacher import PACBatchProbabilisticTeacher
+from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilisticTeacher
+
+from utils import predict
+from pytorch_language_model import PytorchLanguageModel
+from last_token_weights_pickle_dataset_generator import LastTokenWeightsPickleDataSetGenerator
+
     
 def run():
+    dataset_amount = 10
+    for ds in range(1,dataset_amount+1):
+        DATASET = ds
+        model_name = f"models/2.{DATASET}.taysir.model"
+        model = mlflow.pytorch.load_model(model_name)
+        
+        print("\n")
+        print("Model:", ds)
+        print(model.eval())
+        try:#RNN
+            nb_letters = model.input_size -1
+            cell_type = model.cell_type
+
+            print("The alphabet contains", nb_letters, "symbols.")
+            print("The type of the recurrent cells is", cell_type.__name__)
+        except:
+            nb_letters = model.distilbert.config.vocab_size
+            print("The alphabet contains", nb_letters, "symbols.")
+            print("The model is a transformer (DistilBertForSequenceClassification)")
     TRACK = 2 #always for this track
-    DATASET = 1
-
+    DATASET = 2
     model_name = f"models/2.{DATASET}.taysir.model"
-
-    model = mlflow.pytorch.load_model(model_name)
-    model.eval()
-
-    try:#RNN
-        nb_letters = model.input_size -1
-        cell_type = model.cell_type
-
-        print("The alphabet contains", nb_letters, "symbols.")
-        print("The type of the recurrent cells is", cell_type.__name__)
-    except:
-        nb_letters = model.distilbert.config.vocab_size
-        print("The alphabet contains", nb_letters, "symbols.")
-        print("The model is a transformer (DistilBertForSequenceClassification)")
+    alphabet = None
+    sequences = []
+    
 
     file = f"datasets/2.{DATASET}.taysir.valid.words"
-
-    sequences = []
+    empty_sequence_len = 2
     with open(file) as f:
-        f.readline() #Skip first line (number of sequences, alphabet size)
+        a = f.readline()
+        headline = a.split(' ')
+        alphabet_size = int(headline[1].strip())
+        alphabet = Alphabet.from_strings([str(x) for x in range(alphabet_size - empty_sequence_len)])
+
         for line in f:
             line = line.strip()
             seq = line.split(' ')
-            seq = [int(i) for i in seq[1:]] #Remove first value (length of sequence) and cast to int
+            seq = [int(i) for i in seq[1:]]
             sequences.append(seq)
 
-    print('Number of sequences:', len(sequences))
-    print('10 first sequences:')
-    for i in range(10):
-        print(sequences[i])
-
-    print(predict(sequences[1], model))
-
-
+    model = mlflow.pytorch.load_model(model_name)
+    model.eval()
+    name = "track_" + str(TRACK) + "_dataset_" + str(DATASET)
+    target_model = PytorchLanguageModel(alphabet, model, name)
+    
+    LastTokenWeightsPickleDataSetGenerator().genearte_dataset(target_model, 100, "./test",10)
+    
 if __name__ == '__main__':
     run()

@@ -17,7 +17,7 @@ class PytorchLanguageModel(ProbabilisticModel):
         self._alphabet_len = len(alphabet) + 1
         self._model = model
         self._name = name
-        self._terminal_symbol = SymbolStr(self._alphabet_len-1)
+        self._terminal_symbol = SymbolStr(self._alphabet_len)
         
     @property
     def name(self) -> str:
@@ -35,11 +35,17 @@ class PytorchLanguageModel(ProbabilisticModel):
         adapted_sequence = self._adapt_sequence(sequence)
         return utils.next_symbols_probas(adapted_sequence, self._model)
     
-    def _adapt_sequence(self, sequence):
+    def _adapt_sequence(self, sequence, add_terminal = False):
+        """
+        Method that converts sequence to list of ints and adds the starting token to the beggining 
+        and terminal token at the end depending on the variable 'add_terminal'
+        """
         adapted_seq = [self._alphabet_len-1]
         for symbol in sequence.value:
             adapted_seq.append(int(symbol.value))
-        adapted_seq.append(self._alphabet_len)
+
+        if add_terminal:
+            adapted_seq.append(self._alphabet_len)
         
         return adapted_seq
     
@@ -136,16 +142,19 @@ class PytorchLanguageModel(ProbabilisticModel):
         seqs_to_query = []
         for length in sequences_by_length:            
             seqs =  sequences_by_length[length]
-            adapted_sequences = list(map(lambda x: self._adapt_sequence(x), seqs))       
-                        
+            adapted_sequences = list(map(lambda x: self._adapt_sequence(x), seqs))     
             adapted_sequences_np = np.asarray(adapted_sequences)
 
-            if length == 1:
-                adapted_sequences_np = adapted_sequences_np.reshape((-1, 1, len(adapted_sequences_np[0]))) 
+            #if length == 1:
+            #    adapted_sequences_np = adapted_sequences_np.reshape((-1, 1, len(adapted_sequences_np[0]))) 
             if length == 0:                
-                seqs = [Sequence() for i in seqs]
-
-            model_evaluation = utils.full_next_symbols_probas_batch(adapted_sequences_np, self._model)
+                seq = Sequence()
+                adapted_sequence = self._adapt_sequence(seqs[0], add_terminal=True)    
+                adapted_sequence_np = np.asarray(adapted_sequence)
+                result = utils.full_next_symbols_probas(adapted_sequence_np, self._model)
+                model_evaluation = [result[1]]
+            else:
+                model_evaluation = utils.full_next_symbols_probas_batch(adapted_sequences_np, self._model)[:,-1]
             seqs_to_query.extend(seqs)
             query_results.extend(model_evaluation)
 
