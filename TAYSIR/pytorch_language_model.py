@@ -31,8 +31,8 @@ class PytorchLanguageModel(ProbabilisticModel):
     def terminal_symbol(self):
         return self._terminal_symbol
     
-    def process_query(self, sequence):
-        adapted_sequence = self._adapt_sequence(sequence)
+    def process_query(self, sequence):        
+        adapted_sequence = self._adapt_sequence(sequence, add_terminal=len(sequence) == 0)       
         return utils.next_symbols_probas(adapted_sequence, self._model)
     
     def _adapt_sequence(self, sequence, add_terminal = False):
