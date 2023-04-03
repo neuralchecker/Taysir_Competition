@@ -66,7 +66,29 @@ def run():
     name = "track_" + str(TRACK) + "_dataset_" + str(DATASET)
     target_model = PytorchLanguageModel(alphabet, model, name)
     
-    LastTokenWeightsPickleDataSetGenerator().genearte_dataset(target_model, 100, "./test",10)
-    
+    LastTokenWeightsPickleDataSetGenerator().genearte_dataset(target_model, 1000, "./test",100)
+
+    epsilon = 0.1
+    delta = 0.1
+    max_states = 1000000
+    max_query_length= 1000000
+    max_secs = 120
+    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=100, min_seq_length=20)
+    dataloader = PickleDataLoader("./test")
+
+    partitioner = QuantizationProbabilityPartitioner(10)
+    comparator = WFAPartitionComparator(partitioner)
+    teacher1  = PACBatchProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
+    learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_secs, generate_partial_hipothesis = False, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False)
+    learning_result = learner.learn(teacher1)  
+    print("No cache")
+    print(learning_result.info)
+
+    teacher2  = PACBatchProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False, cache_from_dataloader=dataloader)
+    learner2 = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_secs, generate_partial_hipothesis = False, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False)
+    learning_result2 = learner2.learn(teacher2)  
+    print("With cache")
+    print(learning_result2.info)
+
 if __name__ == '__main__':
     run()
