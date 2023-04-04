@@ -13,7 +13,7 @@ class LastTokenWeightsPickleDataSetGenerator():
         symbols.sort()
         symbols = [model.terminal_symbol] + symbols
         cache = dict()
-        pbar = tqdm(total=max_query_elements)
+        #pbar = tqdm(total=max_query_elements)
         while total_elements<max_query_elements:
             queries = []
             for _ in range(batch_size):
@@ -24,4 +24,4 @@ class LastTokenWeightsPickleDataSetGenerator():
             results  = dict(zip(queries, results_od))          
             cache.update(results)  
             #joblib.dump(cache, path)
-            pbar.update(batch_size)
+            #pbar.update(batch_size)
