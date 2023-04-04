@@ -23,5 +23,5 @@ class LastTokenWeightsPickleDataSetGenerator():
             results_od = [OrderedDict(zip(symbols, x)) for x in results]
             results  = dict(zip(queries, results_od))          
             cache.update(results)  
-            joblib.dump(cache, path)
+            #joblib.dump(cache, path)
             pbar.update(batch_size)
