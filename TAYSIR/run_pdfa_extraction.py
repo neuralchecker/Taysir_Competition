@@ -9,23 +9,23 @@ from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFA
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pdfa_wrapper import MlflowPDFA
 from submit_tools_fix import save_function
-
+import torch
 from utils import test_model
 import metrics
 
 # Ignore warnings
 import warnings
 warnings.filterwarnings('ignore')
-
+torch.set_num_threads(4)
 TRACK = 2 #always for his track
 dataset_amount = 10
 tested_results = []
-max_extraction_time = 60
-max_sequence_len = 1000
-min_sequence_len = 500
+max_extraction_time = 600
+max_sequence_len = 100
+min_sequence_len = 0
 
-max_sequence_len_transformer = 500
-min_sequence_len_transformer = 100
+max_sequence_len_transformer = 100#500 tops
+min_sequence_len_transformer = 0
 
 epsilon = 0.01
 delta = 0.01

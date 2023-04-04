@@ -7,7 +7,7 @@ from pythautomata.utilities.uniform_length_sequence_generator import UniformLeng
 from pythautomata.base_types.sequence import Sequence
 import datetime
 import numpy as np
-
+from pdfa_wrapper import MlflowPDFA
 epsilon = Sequence()
 
 # def compute_stats(target_model, extracted_model, tolerance, partitions, test_sequences = None, sample_size = 1000, max_seq_length = 20, seed = 42):
@@ -29,7 +29,7 @@ epsilon = Sequence()
 def is_unknown_proba(probability_vector):
     return np.any(probability_vector<0)
 
-def taysir_error_rate(target_model, extracted_model, test_sequences):
+def taysir_error_rate_on_output_vector(target_model, extracted_model, test_sequences):
     # MSEx10⁶
     suffixes = list()
     suffixes.append(Sequence() + extracted_model.terminal_symbol)
@@ -50,6 +50,22 @@ def taysir_error_rate(target_model, extracted_model, test_sequences):
 
     return (10**6)*squared_error_sum / len(test_sequences)
 
+def taysir_error_rate(target_model, extracted_model, test_sequences):
+    # MSEx10⁶
+    mlflow_dfa = MlflowPDFA(extracted_model)
+
+    all_obs1 = [mlflow_dfa.predict(x) for x in test_sequences]
+    all_obs2 = [target_model.sequence_probability(x) for x in test_sequences]
+
+    squared_error_sum = 0
+    for i in range(len(all_obs1)):
+        obs1 = all_obs1[i]
+        obs2 = all_obs2[i]
+        squared_error_sum += np.square(obs1-obs2)
+
+    return (10**6)*squared_error_sum / len(test_sequences)
+
+    
 def partial_accuracy(target_model, partial_model, partitioner, test_sequences):
     suffixes = list()
     suffixes.append(epsilon + partial_model.terminal_symbol)

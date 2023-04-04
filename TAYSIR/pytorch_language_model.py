@@ -87,7 +87,7 @@ class PytorchLanguageModel(ProbabilisticModel):
         return self.get_last_token_weights_batch(sequences, required_suffixes)
     
     def sequence_probability(self, sequence: Sequence, debug = False):
-        adapted_sequence = self._adapt_sequence(sequence)
+        adapted_sequence = self._adapt_sequence(sequence,  add_terminal=True)
         return utils.sequence_probability(adapted_sequence, self._model)
     
     def get_last_token_weights(self, sequence, required_suffixes):
