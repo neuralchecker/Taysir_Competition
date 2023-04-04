@@ -52,14 +52,14 @@ def full_next_symbols_probas(sequence, model):
                 attention_mask = make_future_masks(word)
                 out = model.forward(word, attention_mask=attention_mask)
                 out = torch.nn.functional.softmax(out.logits[0], dim=1)
-                return out.detach().numpy()[:, 1:] #  the probabilities for padding id (0) are removed        
-        return predict_next_symbols(model, sequence[:-1])
+                return out.detach().numpy()    
+        return predict_next_symbols(model, sequence)
 
 def full_next_symbols_probas_batch(sequences, model):      
     if not hasattr(model, 'distilbert'):
         sequences = torch.stack(list(map(lambda x: model.one_hot_encode(x), sequences)))             
         value, hiddens = model.forward_lm(sequences)        
-        return value.detach().numpy()[:, :, 1:]
+        return value.detach().numpy()
         
     else: #Transformer
         def make_future_masks(words:torch.Tensor):
@@ -81,11 +81,11 @@ def full_next_symbols_probas_batch(sequences, model):
             words = torch.IntTensor(words)
             model.eval()
             with torch.no_grad():
-                attention_mask = make_future_masks(words[0])
-                out = model.forward(words, attention_mask=attention_mask)
-                out = torch.nn.functional.softmax(out.logits[0], dim=1)
-                return out.detach().numpy()[:,:,1:] #  the probabilities for padding id (0) are removed        
-        return predict_next_symbols(model, sequences[:,:-1])
+                attention_mask = make_future_masks(words)
+                out = model.forward(words, attention_mask=attention_mask)                
+                out = torch.nn.functional.softmax(out.logits, dim=2)   
+                return out.detach().numpy()  
+        return predict_next_symbols(model, sequences)
 
 
 def next_symbols_probas(sequence, model):     

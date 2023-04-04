@@ -41,7 +41,7 @@ def run():
             print("The alphabet contains", nb_letters, "symbols.")
             print("The model is a transformer (DistilBertForSequenceClassification)")
     TRACK = 2 #always for this track
-    DATASET = 2
+    DATASET = 10
     model_name = f"models/2.{DATASET}.taysir.model"
     alphabet = None
     sequences = []
