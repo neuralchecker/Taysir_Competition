@@ -94,8 +94,8 @@ def next_symbols_probas(sequence, model):
 import numpy as np
 def sequence_probability(sequence, model):
     probs = full_next_symbols_probas(sequence, model)
-    print(probs)
-    print(list(enumerate(sequence[1:])))
+    #print(probs)
+    #print(list(enumerate(sequence[1:])))
     probas_for_word = [probs[i,a] for i,a in enumerate(sequence)]
     value = np.array(probas_for_word).prod()
     return float(value)

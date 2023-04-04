@@ -22,10 +22,10 @@ dataset_amount = 10
 tested_results = []
 max_extraction_time = 60
 max_sequence_len = 100
-min_sequence_len = 0
+min_sequence_len = 2
 
 max_sequence_len_transformer = 100#500 tops
-min_sequence_len_transformer = 0
+min_sequence_len_transformer = 2
 
 epsilon = 0.01
 delta = 0.01
