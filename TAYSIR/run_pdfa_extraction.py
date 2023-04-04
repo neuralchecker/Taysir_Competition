@@ -20,7 +20,7 @@ torch.set_num_threads(4)
 TRACK = 2 #always for his track
 dataset_amount = 10
 tested_results = []
-max_extraction_time = 600
+max_extraction_time = 60
 max_sequence_len = 100
 min_sequence_len = 0
 
@@ -77,7 +77,7 @@ for ds in range(dataset_amount):
     res = learner.learn(teacher)    
     print("DATASET: " + str(DATASET) + " learned with " + str(res.info['equivalence_queries_count']) + 
           " equivalence queries and " + str(res.info['last_token_weight_queries_count']) + "membership queries"+
-          " with " + str(len(res.model.states)) + " states")
+          " with " + str(len(res.model.weighted_states)) + " states")
     
     mlflow_dfa = MlflowPDFA(res.model)
     save_function(mlflow_dfa, len(res.model.alphabet), target_model.name)
