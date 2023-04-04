@@ -22,6 +22,7 @@ class LastTokenWeightsPickleDataSetGenerator():
             results = model.get_last_token_weights_batch(queries, symbols)                         
             results_od = [OrderedDict(zip(symbols, x)) for x in results]
             results  = dict(zip(queries, results_od))          
-            cache.update(results)  
-            joblib.dump(cache, path)
-            pbar.update(batch_size)
+            cache.update(results)
+            if (total_elements % 1000) == 0 : 
+                joblib.dump(cache, path)
+                pbar.update(batch_size)
