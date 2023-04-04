@@ -102,7 +102,7 @@ def compute_stats(target_model, extracted_model, partitioner, test_sequences = N
     result= dict()
 
     result.update(partial_accuracy(target_model, extracted_model, partitioner,test_sequences))
-    result.update({"Taysir MSE": taysir_error_rate((target_model, extracted_model,test_sequences))})
+    result.update({"Taysir MSE": taysir_error_rate(target_model, extracted_model,test_sequences)})
     return result
 
 def time_fun(function, *args):    
