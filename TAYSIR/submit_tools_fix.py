@@ -15,7 +15,7 @@ class func_to_class(mlflow.pyfunc.PythonModel):
         self.func = func
 
     def predict(self, context, model_input):
-        return self.func.predict(model_input)
+        return self.func.predict(model_input[1:])
 
 
 def save_function(func, alphabet_size, prefix):

@@ -20,7 +20,7 @@ torch.set_num_threads(4)
 TRACK = 2 #always for his track
 dataset_amount = 10
 tested_results = []
-max_extraction_time = 60
+max_extraction_time = 30
 max_sequence_len = 100
 min_sequence_len = 2
 
@@ -82,6 +82,6 @@ for ds in range(dataset_amount):
     mlflow_dfa = MlflowPDFA(res.model)
     save_function(mlflow_dfa, len(res.model.alphabet), target_model.name)
     
-    test_sequences = sequence_generator.generate_words(1000)
+    test_sequences = sequence_generator.generate_words(100)
     print(metrics.compute_stats(target_model, res.model,partitioner, test_sequences))
     
