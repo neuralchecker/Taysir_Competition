@@ -7,17 +7,20 @@ from pymodelextractor.teachers.pac_batch_probabilistic_teacher import PACBatchPr
 from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilisticTeacher
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
+from pythautomata.base_types.alphabet import Alphabet
 from pdfa_wrapper import MlflowPDFA
 from submit_tools_fix import save_function
 import torch
-from utils import test_model
 import metrics
-
+import datetime
+import pandas as pd
+import os
 # Ignore warnings
 import warnings
 warnings.filterwarnings('ignore')
 torch.set_num_threads(4)
-TRACK = 2 #always for his track
+
+TRACK = 2 #always for this track
 dataset_amount = 10
 tested_results = []
 max_extraction_time = 30
@@ -32,17 +35,14 @@ delta = 0.01
 max_states = 10000
 max_query_length = 1000
 
-for ds in range(dataset_amount):
-    DATASET = ds + 1
-
-    model_name = f"models/2.{DATASET}.taysir.model"
+def load_model(ds):
+    model_name = f"models/2.{ds}.taysir.model"
     model = mlflow.pytorch.load_model(model_name)
     model.eval()
-    
-    from pythautomata.base_types.alphabet import Alphabet
+    return model
 
-    file = f"datasets/2.{DATASET}.taysir.valid.words"
-
+def get_alphabet_from_sequences(ds):
+    file = f"datasets/2.{ds}.taysir.valid.words"
     alphabet = None
     sequences = []
 
@@ -52,36 +52,86 @@ for ds in range(dataset_amount):
         headline = a.split(' ')
         alphabet_size = int(headline[1].strip())
         alphabet = Alphabet.from_strings([str(x) for x in range(alphabet_size - empty_sequence_len)])
-
         for line in f:
             line = line.strip()
             seq = line.split(' ')
             seq = [int(i) for i in seq[1:]]
             sequences.append(seq)
-            
-        
-    name = "Track: " + str(TRACK) + " - DataSet: " + str(DATASET)
-    target_model = PytorchLanguageModel(alphabet, model, name)
-    if DATASET == 10:        
-      sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len_transformer,
+    return alphabet
+
+def create_model(alphabet, model, ds):
+  name = "Track: " + str(TRACK) + " - DataSet: " + str(ds)
+  target_model = PytorchLanguageModel(alphabet, model, name)
+  return target_model
+
+def instantiate_sequence_generator(ds, alphabet):
+   if ds == 10:        
+    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len_transformer,
                                                         min_seq_length=min_sequence_len_transformer)
-    else:
+   else:
       sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
                                                         min_seq_length=min_sequence_len)  
+   return sequence_generator
+def show(result, ds):
+   print("DATASET: " + str(ds) + " learned with " + str(result.info['equivalence_queries_count']) + 
+          " equivalence queries and " + str(result.info['last_token_weight_queries_count']) + "membership queries "+
+          " with " + str(len(result.model.weighted_states)) + " states")
+
+def get_path_for_result_file(path="/extraction_results"):
+    return path+"/results_"+datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.csv'
+
+def persist_results(ds, learning_result, stats, output_path):
+    result = dict()
+    extracted_model = learning_result.model
+    if learning_result.info['observation_tree'] is None:
+        tree_depth = 0
+        inner_nodes = 0
+    else:
+        tree_depth = learning_result.info['observation_tree'].depth
+        inner_nodes = len(learning_result.info['observation_tree'].inner_nodes)
+    result.update({ 
+                'Instance': ds,
+                'Number of Extracted States': len(extracted_model.weighted_states) ,   
+                'LastTokenQuery': learning_result.info['last_token_weight_queries_count'], 
+                'EquivalenceQuery': learning_result.info['equivalence_queries_count'], 
+                'NumberOfStatesExceeded': learning_result.info['NumberOfStatesExceeded'],
+                'QueryLengthExceeded':learning_result.info['QueryLengthExceeded'], 
+                'TimeExceeded': learning_result.info['TimeExceeded'],
+                'Tree Depth': tree_depth,
+                'Inner Nodes': inner_nodes,
+                'TimeBound': max_extraction_time
+                })
+    result.update(stats)
+    dfresults = pd.DataFrame([result], columns = result.keys())     
+    dfresults.to_csv(output_path, mode = 'a', header = not os.path.exists(output_path)) 
+
+
+def run_instance(ds):
+    DATASET = ds
+    model = load_model(DATASET)
+    alphabet = get_alphabet_from_sequences(DATASET)
+    target_model = create_model(alphabet, model, DATASET)  
+    sequence_generator = instantiate_sequence_generator(DATASET, alphabet)
     partitioner = QuantizationProbabilityPartitioner(10)
-    comparator = WFAPartitionComparator(partitioner)
-    
+    comparator = WFAPartitionComparator(partitioner)    
     teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
     learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = False, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False)
-
-    res = learner.learn(teacher)    
-    print("DATASET: " + str(DATASET) + " learned with " + str(res.info['equivalence_queries_count']) + 
-          " equivalence queries and " + str(res.info['last_token_weight_queries_count']) + "membership queries"+
-          " with " + str(len(res.model.weighted_states)) + " states")
-    
-    mlflow_dfa = MlflowPDFA(res.model)
-    save_function(mlflow_dfa, len(res.model.alphabet), target_model.name)
+    result = learner.learn(teacher)
+    show(result, DATASET)
+      
+    mlflow_dfa = MlflowPDFA(result.model)
+    save_function(mlflow_dfa, len(result.model.alphabet), target_model.name)
     
     test_sequences = sequence_generator.generate_words(100)
-    print(metrics.compute_stats(target_model, res.model,partitioner, test_sequences))
+    stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
+    print(stats)
+    persist_results(DATASET, result, stats, output_path=get_path_for_result_file())
+  
+def run():
+  for ds in range(dataset_amount):
+      run_instance(ds+1)        
+    
+if __name__ == '__main__':
+    run()  
+
     
