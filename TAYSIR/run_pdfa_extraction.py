@@ -77,7 +77,7 @@ def show(result, ds):
           " equivalence queries and " + str(result.info['last_token_weight_queries_count']) + "membership queries "+
           " with " + str(len(result.model.weighted_states)) + " states")
 
-def get_path_for_result_file(path="/extraction_results"):
+def get_path_for_result_file(path="./extraction_results"):
     return path+"/results_"+datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.csv'
 
 def persist_results(ds, learning_result, stats, output_path):
@@ -106,7 +106,7 @@ def persist_results(ds, learning_result, stats, output_path):
     dfresults.to_csv(output_path, mode = 'a', header = not os.path.exists(output_path)) 
 
 
-def run_instance(ds):
+def run_instance(ds, path_for_results):
     DATASET = ds
     model = load_model(DATASET)
     alphabet = get_alphabet_from_sequences(DATASET)
@@ -125,11 +125,13 @@ def run_instance(ds):
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
     print(stats)
-    persist_results(DATASET, result, stats, output_path=get_path_for_result_file())
+    persist_results(DATASET, result, stats, output_path=path_for_results)
   
 def run():
-  for ds in range(dataset_amount):
-      run_instance(ds+1)        
+  datasets_to_run = [1,2,3,5,6,10]
+  path_for_results = get_path_for_result_file()
+  for ds in datasets_to_run:
+      run_instance(ds, path_for_results)        
     
 if __name__ == '__main__':
     run()  
