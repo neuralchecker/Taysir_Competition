@@ -2,6 +2,7 @@ import mlflow
 from pytorch_language_model import PytorchLanguageModel
 from submit_tools_fix import save_function
 from pythautomata.utilities.uniform_length_sequence_generator import UniformLengthSequenceGenerator
+from pythautomata.automata.fast_implementations.fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonConverter as FastPDFAConverter
 from pymodelextractor.learners.observation_tree_learners.bounded_pdfa_quantization_n_ary_tree_learner import BoundedPDFAQuantizationNAryTreeLearner
 from pymodelextractor.teachers.pac_batch_probabilistic_teacher import PACBatchProbabilisticTeacher
 from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilisticTeacher
@@ -9,6 +10,7 @@ from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFA
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
 from pdfa_wrapper import MlflowPDFA
+from fast_pdfa_wrapper import MlflowFastPDFA
 from submit_tools_fix import save_function
 import torch
 import metrics
@@ -119,8 +121,10 @@ def run_instance(ds, path_for_results):
     result = learner.learn(teacher)
     show(result, DATASET)
       
-    mlflow_dfa = MlflowPDFA(result.model)
-    save_function(mlflow_dfa, len(result.model.alphabet), target_model.name)
+    #mlflow_dfa = MlflowPDFA(result.model)
+    fast_pdfa = FastPDFAConverter().to_fast_pdfa(result.model)
+    mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
+    save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name)
     
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
