@@ -1,4 +1,4 @@
-from pythautomata.automata.fast_implementations.fast_pdfa import FastProbabilisticDeterministicFiniteAutomaton as FastPDFA
+from fast_implementations.fast_pdfa import FastProbabilisticDeterministicFiniteAutomaton as FastPDFA
 from typing import Union
 
 class MlflowFastPDFA():
