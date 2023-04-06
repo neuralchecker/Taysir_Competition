@@ -1,4 +1,4 @@
-from fast_implementations.faster_pdfa import FasterProbabilisticDeterministicFiniteAutomaton as FasterPDFA
+from faster_pdfa import FasterProbabilisticDeterministicFiniteAutomaton as FasterPDFA
 from typing import Union
 
 class MlflowFasterPDFA():

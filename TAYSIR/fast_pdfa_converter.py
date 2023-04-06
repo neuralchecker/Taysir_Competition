@@ -1,6 +1,6 @@
 from pythautomata.automata.wheighted_automaton_definition.probabilistic_deterministic_finite_automaton import ProbabilisticDeterministicFiniteAutomaton
-from fast_implementations.fast_pdfa import FastProbabilisticDeterministicFiniteAutomaton as FastPDFA
-from fast_implementations.faster_pdfa import FasterProbabilisticDeterministicFiniteAutomaton as FasterPDFA
+from fast_pdfa import FastProbabilisticDeterministicFiniteAutomaton as FastPDFA
+from faster_pdfa import FasterProbabilisticDeterministicFiniteAutomaton as FasterPDFA
 from collections import OrderedDict
 
 
