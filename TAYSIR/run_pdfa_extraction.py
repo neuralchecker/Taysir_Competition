@@ -2,21 +2,24 @@ import mlflow
 from pytorch_language_model import PytorchLanguageModel
 from submit_tools_fix import save_function
 from pythautomata.utilities.uniform_length_sequence_generator import UniformLengthSequenceGenerator
-from pythautomata.automata.fast_implementations.fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonConverter as FastPDFAConverter
+from fast_implementations.fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonConverter as FastPDFAConverter
 from pymodelextractor.learners.observation_tree_learners.bounded_pdfa_quantization_n_ary_tree_learner import BoundedPDFAQuantizationNAryTreeLearner
 from pymodelextractor.teachers.pac_batch_probabilistic_teacher import PACBatchProbabilisticTeacher
 from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilisticTeacher
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
-from pdfa_wrapper import MlflowPDFA
-from fast_pdfa_wrapper import MlflowFastPDFA
+from model_wrappers.pdfa_wrapper import MlflowPDFA
+from model_wrappers.fast_pdfa_wrapper import MlflowFastPDFA
+from model_wrappers.faster_pdfa_wrapper import MlflowFasterPDFA
 from submit_tools_fix import save_function
 import torch
 import metrics
 import datetime
 import pandas as pd
 import os
+import joblib
+
 # Ignore warnings
 import warnings
 warnings.filterwarnings('ignore')
@@ -79,10 +82,10 @@ def show(result, ds):
           " equivalence queries and " + str(result.info['last_token_weight_queries_count']) + "membership queries "+
           " with " + str(len(result.model.weighted_states)) + " states")
 
-def get_path_for_result_file(path="./extraction_results"):
+def get_path_for_result_file_name(path):
     return path+"/results_"+datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.csv'
 
-def persist_results(ds, learning_result, stats, output_path):
+def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models):
     result = dict()
     extracted_model = learning_result.model
     if learning_result.info['observation_tree'] is None:
@@ -105,10 +108,11 @@ def persist_results(ds, learning_result, stats, output_path):
                 })
     result.update(stats)
     dfresults = pd.DataFrame([result], columns = result.keys())     
-    dfresults.to_csv(output_path, mode = 'a', header = not os.path.exists(output_path)) 
+    dfresults.to_csv(path_for_results_file, mode = 'a', header = not os.path.exists(path_for_results_file)) 
+    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+ds)
 
 
-def run_instance(ds, path_for_results):
+def run_instance(ds, path_for_results_file, path_for_framework_models):
     DATASET = ds
     model = load_model(DATASET)
     alphabet = get_alphabet_from_sequences(DATASET)
@@ -123,19 +127,22 @@ def run_instance(ds, path_for_results):
       
     #mlflow_dfa = MlflowPDFA(result.model)
     fast_pdfa = FastPDFAConverter().to_fast_pdfa(result.model)
+    faster_pdfa = FastPDFAConverter().to_faster_pdfa(result.model)
     mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
-    save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name)
+    mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
+    save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
     
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
     print(stats)
-    persist_results(DATASET, result, stats, output_path=path_for_results)
+    persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models)
   
 def run():
   datasets_to_run = [1,2,3,5,6,10]
-  path_for_results = get_path_for_result_file()
+  path_for_framework_models = "./extraction_results"
+  path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-      run_instance(ds, path_for_results)        
+      run_instance(ds, path_for_results_file, path_for_framework_models)        
     
 if __name__ == '__main__':
     run()  
