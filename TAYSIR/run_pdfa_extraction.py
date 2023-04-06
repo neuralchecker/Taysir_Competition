@@ -131,6 +131,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models):
     mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
     mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
+    save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
     
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
