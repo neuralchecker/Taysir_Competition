@@ -9,9 +9,9 @@ from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilistic
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
-from model_wrappers.pdfa_wrapper import MlflowPDFA
-from model_wrappers.fast_pdfa_wrapper import MlflowFastPDFA
-from model_wrappers.faster_pdfa_wrapper import MlflowFasterPDFA
+from pdfa_wrapper import MlflowPDFA
+from fast_pdfa_wrapper import MlflowFastPDFA
+from faster_pdfa_wrapper import MlflowFasterPDFA
 from submit_tools_fix import save_function
 import torch
 import metrics
@@ -132,7 +132,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models):
     mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
     save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
-    
+
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
     print(stats)
