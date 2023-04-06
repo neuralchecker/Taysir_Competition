@@ -7,7 +7,7 @@ from pythautomata.utilities.uniform_length_sequence_generator import UniformLeng
 from pythautomata.base_types.sequence import Sequence
 import datetime
 import numpy as np
-from model_wrappers.pdfa_wrapper import MlflowPDFA
+from pdfa_wrapper import MlflowPDFA
 epsilon = Sequence()
 
 # def compute_stats(target_model, extracted_model, tolerance, partitions, test_sequences = None, sample_size = 1000, max_seq_length = 20, seed = 42):
