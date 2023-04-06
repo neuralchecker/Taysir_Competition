@@ -109,7 +109,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     result.update(stats)
     dfresults = pd.DataFrame([result], columns = result.keys())     
     dfresults.to_csv(path_for_results_file, mode = 'a', header = not os.path.exists(path_for_results_file)) 
-    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+ds)
+    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds))
 
 
 def run_instance(ds, path_for_results_file, path_for_framework_models):
