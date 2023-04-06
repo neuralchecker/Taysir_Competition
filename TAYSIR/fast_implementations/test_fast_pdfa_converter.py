@@ -1,9 +1,9 @@
-from unittest import TestCase
+#from unittest import TestCase
 from collections import OrderedDict
 
-from pythautomata.automata.fast_implementations.fast_pdfa import FastProbabilisticDeterministicFiniteAutomaton
-from pythautomata.automata.fast_implementations.faster_pdfa import FasterProbabilisticDeterministicFiniteAutomaton
-from pythautomata.automata.fast_implementations.fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonConverter
+from fast_implementations.fast_pdfa import FastProbabilisticDeterministicFiniteAutomaton
+from fast_implementations.faster_pdfa import FasterProbabilisticDeterministicFiniteAutomaton
+from fast_implementations.fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonConverter
 from pythautomata.automata_definitions.tomitas_grammars import TomitasGrammars
 from pythautomata.utilities import pdfa_generator
 from pythautomata.utilities.uniform_word_sequence_generator import UniformWordSequenceGenerator
@@ -11,7 +11,7 @@ from pythautomata.base_types.sequence import Sequence
 import time
 
 
-class TestFastPDFAConverter(TestCase):
+class TestFastPDFAConverter():
     def _seq_to_list_of_ints(self, sequence):
         return [int(x.value) for x in sequence]
 
@@ -34,9 +34,9 @@ class TestFastPDFAConverter(TestCase):
             self.assertEqual(pdfa_res, fast_pdfa_res)
             self.assertTrue(abs(pdfa_prob - fast_pdfa_prob) < 0.000001)
 
-    # def test_tomitas(self):
-    #     for dfa in TomitasGrammars().get_all_automata():
-    #         self._test_from_dfa(dfa)
+    def test_tomitas(self):
+        for dfa in TomitasGrammars().get_all_automata():
+            self._test_from_dfa(dfa)
 
     def test_speed(self):
         dfa = TomitasGrammars().get_automaton_7()
@@ -68,3 +68,8 @@ class TestFastPDFAConverter(TestCase):
         end = time.time()
         print(end - start)
         print("A")
+
+
+if __name__ == '__main__':
+    TestFastPDFAConverter().test_tomitas() 
+    TestFastPDFAConverter().test_speed() 
