@@ -125,11 +125,13 @@ def run_instance(ds, path_for_results_file, path_for_framework_models):
     result = learner.learn(teacher)
     show(result, DATASET)
       
-    #mlflow_dfa = MlflowPDFA(result.model)
+    mlflow_pdfa = MlflowPDFA(result.model)
     fast_pdfa = FastPDFAConverter().to_fast_pdfa(result.model)
     faster_pdfa = FastPDFAConverter().to_faster_pdfa(result.model)
     mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
     mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
+    
+    save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
     save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
     save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
