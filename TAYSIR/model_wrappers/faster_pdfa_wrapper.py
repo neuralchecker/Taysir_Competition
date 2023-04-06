@@ -6,6 +6,6 @@ class MlflowFasterPDFA():
         self.faster_pdfa = faster_pdfa
     
     def predict(self, model_input):
-        return self.fast_pdfa.sequence_probability(model_input)
+        return self.faster_pdfa.sequence_probability(model_input)
     
    
