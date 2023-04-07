@@ -61,9 +61,9 @@ class FastProbabilisticDeterministicFiniteAutomaton():
         # return product
         actual_state = self.initial_state
         product = 1
-        both_funs = self.both_functions        
+        both_funs = self.both_functions.get        
         for symbol in sequence:
-            next_state, proba = both_funs[actual_state][symbol]
+            next_state, proba = both_funs(actual_state)[symbol]
             product *= proba
             if symbol == self.terminal_symbol:
                 #assert len(remaining) == 1, "Terminal symbol should be the last symbol of the sequence"
