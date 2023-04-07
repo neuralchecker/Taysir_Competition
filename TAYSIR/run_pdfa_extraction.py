@@ -141,16 +141,17 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params):
   
 def run():
   params = dict()
-  params[1] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[2] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[3] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[4] = {"max_extraction_time":30, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[5] = {"max_extraction_time":30, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[6] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[7] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[8] = {"max_extraction_time":30, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[9] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[10]= {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
+  time = 360
+  params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[3] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[4] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[5] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[6] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[7] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[8] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[9] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[10]= {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
 
   datasets_to_run = list(range(1, 11))
   path_for_framework_models = "./extraction_results"
