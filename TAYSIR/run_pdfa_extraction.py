@@ -26,19 +26,17 @@ warnings.filterwarnings('ignore')
 torch.set_num_threads(4)
 
 TRACK = 2 #always for this track
-dataset_amount = 10
-tested_results = []
-max_extraction_time = 30
-max_sequence_len = 100
-min_sequence_len = 2
+#max_extraction_time = 30
+#max_sequence_len = 100
+#min_sequence_len = 2
 
-max_sequence_len_transformer = 100#500 tops
-min_sequence_len_transformer = 2
+#max_sequence_len_transformer = 100#500 tops
+#min_sequence_len_transformer = 2
 
-epsilon = 0.01
-delta = 0.01
-max_states = 10000
-max_query_length = 1000
+#epsilon = 0.01
+#delta = 0.01
+#max_states = 10000
+#max_query_length = 1000
 
 def load_model(ds):
     model_name = f"models/2.{ds}.taysir.model"
@@ -69,14 +67,6 @@ def create_model(alphabet, model, ds):
   target_model = PytorchLanguageModel(alphabet, model, name)
   return target_model
 
-def instantiate_sequence_generator(ds, alphabet):
-   if ds == 10:        
-    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len_transformer,
-                                                        min_seq_length=min_sequence_len_transformer)
-   else:
-      sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
-                                                        min_seq_length=min_sequence_len)  
-   return sequence_generator
 def show(result, ds):
    print("DATASET: " + str(ds) + " learned with " + str(result.info['equivalence_queries_count']) + 
           " equivalence queries and " + str(result.info['last_token_weight_queries_count']) + "membership queries "+
@@ -85,7 +75,7 @@ def show(result, ds):
 def get_path_for_result_file_name(path):
     return path+"/results_"+datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.csv'
 
-def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models):
+def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time):
     result = dict()
     extracted_model = learning_result.model
     if learning_result.info['observation_tree'] is None:
@@ -112,13 +102,22 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds))
 
 
-def run_instance(ds, path_for_results_file, path_for_framework_models):
+def run_instance(ds, path_for_results_file, path_for_framework_models, params):
     DATASET = ds
     model = load_model(DATASET)
     alphabet = get_alphabet_from_sequences(DATASET)
-    target_model = create_model(alphabet, model, DATASET)  
-    sequence_generator = instantiate_sequence_generator(DATASET, alphabet)
-    partitioner = QuantizationProbabilityPartitioner(10)
+    target_model = create_model(alphabet, model, DATASET) 
+    max_sequence_len = params['max_sequence_len']
+    min_sequence_len = params['min_sequence_len']
+    epsilon = params['epsilon']
+    delta = params['delta']
+    max_states = params['max_states']
+    max_query_length = params['max_query_length']
+    max_extraction_time = params['max_extraction_time']
+    partitions = params['partitions']
+
+    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
+    partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)    
     teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
     learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = False, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False)
@@ -138,14 +137,26 @@ def run_instance(ds, path_for_results_file, path_for_framework_models):
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
     print(stats)
-    persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models)
+    persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
   
 def run():
-  datasets_to_run = [1,2,3,5,6,10]
+  params = dict()
+  params[1] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[2] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[3] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[4] = {"max_extraction_time":30, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[5] = {"max_extraction_time":30, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[6] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[7] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[8] = {"max_extraction_time":30, "partitions":20, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[9] = {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[10]= {"max_extraction_time":30, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
+
+  datasets_to_run = list(range(1, 11))
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-      run_instance(ds, path_for_results_file, path_for_framework_models)        
+      run_instance(ds, path_for_results_file, path_for_framework_models, params[ds])        
     
 if __name__ == '__main__':
     run()  
