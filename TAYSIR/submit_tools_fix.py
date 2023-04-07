@@ -12,10 +12,10 @@ logging.getLogger("mlflow").setLevel(logging.DEBUG)
 
 class func_to_class(mlflow.pyfunc.PythonModel):
     def __init__(self, func):
-        self.func = func
+        self._predict = func.predict
 
     def predict(self, context, model_input):
-        return self.func.predict(model_input[1:])
+        return self._predict(model_input[1:])
 
 
 def save_function(func, alphabet_size, prefix):
