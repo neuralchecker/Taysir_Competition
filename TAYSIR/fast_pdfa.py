@@ -14,7 +14,7 @@ class FastProbabilisticDeterministicFiniteAutomaton():
     initial_state: string
         Initial state of the PDFA. A key of "states"
     """
-
+    __slots__ = ("initial_state", "transition_function", "probability_function", "terminal_symbol")
     def __init__(
         self,
         alphabet: set[int],
@@ -27,9 +27,9 @@ class FastProbabilisticDeterministicFiniteAutomaton():
         self.transition_function = transition_function
         self.probability_function = probability_function
         self.terminal_symbol = terminal_symbol
-        self._name = "PDFA - " + \
-            str(uuid.uuid4().hex) if name is None else name
-        self._alphabet = alphabet
+        #self._name = "PDFA - " + \
+        #    str(uuid.uuid4().hex) if name is None else name
+        #self._alphabet = alphabet
         self.initial_state = initial_state
 
     def next_token_probabilities(self, sequence: list[int]):

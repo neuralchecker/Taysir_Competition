@@ -71,5 +71,5 @@ class TestFastPDFAConverter():
 
 
 if __name__ == '__main__':
-    TestFastPDFAConverter().test_tomitas() 
+    #TestFastPDFAConverter().test_tomitas() 
     TestFastPDFAConverter().test_speed() 
