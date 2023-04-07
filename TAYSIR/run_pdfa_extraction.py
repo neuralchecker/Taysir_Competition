@@ -120,7 +120,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params):
     partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)    
     teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
-    learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = False, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False)
+    learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
     result = learner.learn(teacher)
     show(result, DATASET)
       
@@ -130,9 +130,9 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params):
     mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
     mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     
-    save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
+    #save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
     save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
-    save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
+    #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
