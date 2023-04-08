@@ -36,8 +36,8 @@ def save_function(func, alphabet_size, prefix):
         
         zip_path = f"predicted_models/{prefix}.zip"
 
-        code_paths = list(Path().rglob('*.py'))
-        #code_paths = [PosixPath('wrapper.py')]
+        code_paths = list(Path().rglob('fast_pdfa_wrapper.py'))
+        #code_paths = [PosixPath('fast_pdfa_wrapper.py')]
           
         mlflow.pyfunc.save_model(
             path=mlflow_path,
