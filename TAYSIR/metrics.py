@@ -52,7 +52,7 @@ def taysir_error_rate_on_output_vector(target_model, extracted_model, test_seque
 
 def taysir_error_rate(target_model, extracted_model, test_sequences):
     # MSEx10⁶
-    mlflow_dfa = MlflowPDFA(extracted_model)
+    mlflow_dfa = MlflowProbabilisticModel(extracted_model)
 
     all_obs1 = [mlflow_dfa.predict(x) for x in test_sequences]
     all_obs2 = [target_model.sequence_probability(x) for x in test_sequences]
