@@ -1,11 +1,11 @@
 from pythautomata.base_types.sequence import Sequence
-from pythautomata.automata.wheighted_automaton_definition.probabilistic_deterministic_finite_automaton import ProbabilisticDeterministicFiniteAutomaton
+from pythautomata.abstract.probabilistic_model import ProbabilisticModel
 from pythautomata.base_types.symbol import SymbolStr, Symbol
 from typing import Union
 
-class MlflowPDFA():
-    def __init__(self, pdfa: ProbabilisticDeterministicFiniteAutomaton) -> None:
-        self.pdfa = pdfa
+class MlflowProbabilisticModel():
+    def __init__(self, model: ProbabilisticModel) -> None:
+        self.model = model
 
     def create_sequence(self, input_data: Union['Sequence', list[Symbol], tuple[Symbol], list[str], tuple[str], str, int, list[int], tuple[int]]) -> Sequence:
     
@@ -28,6 +28,6 @@ class MlflowPDFA():
     def predict(self, model_input):
         sequence = self.create_sequence(model_input)
         #prefixes = sequence.get_prefixes()
-        return self.pdfa.sequence_weight(sequence)
+        return self.model.sequence_probability(sequence)
     
    

@@ -6,10 +6,11 @@ from fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonCon
 from pymodelextractor.learners.observation_tree_learners.bounded_pdfa_quantization_n_ary_tree_learner import BoundedPDFAQuantizationNAryTreeLearner
 from pymodelextractor.teachers.pac_batch_probabilistic_teacher import PACBatchProbabilisticTeacher
 from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilisticTeacher
+from pymodelextractor.learners.other_learners.ensemble_probabilistic_learner import EnsembleProbabilisticLearner
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
-from pdfa_wrapper import MlflowPDFA
+from probabilistic_model_wrapper import MlflowProbabilisticModel
 from fast_pdfa_wrapper import MlflowFastPDFA
 from faster_pdfa_wrapper import MlflowFasterPDFA
 from submit_tools_fix import save_function
@@ -102,7 +103,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds))
 
 
-def run_instance(ds, path_for_results_file, path_for_framework_models, params):
+def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble):
     DATASET = ds
     model = load_model(DATASET)
     alphabet = get_alphabet_from_sequences(DATASET)
@@ -120,19 +121,29 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params):
     partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)    
     teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
-    learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
+    if ensemble:
+        learners = []
+        for i in range(5):
+            l = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
+            learners.append(l.learn)        
+        learner = EnsembleProbabilisticLearner(learning_functions=learners)
+    else:
+        learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
     result = learner.learn(teacher)
     show(result, DATASET)
-      
-    mlflow_pdfa = MlflowPDFA(result.model)
-    fast_pdfa = FastPDFAConverter().to_fast_pdfa(result.model)
-    faster_pdfa = FastPDFAConverter().to_faster_pdfa(result.model)
-    mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
-    mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
+    if ensemble:
+        mlflow_ensemble = MlflowProbabilisticModel(result.model)
+        save_function(mlflow_ensemble, len(result.model.alphabet), target_model.name+"_FAST")
+    else:
+        #mlflow_pdfa = MlflowPDFA(result.model)
+        fast_pdfa = FastPDFAConverter().to_fast_pdfa(result.model)
+        #faster_pdfa = FastPDFAConverter().to_faster_pdfa(result.model)
+        mlflow_fast_pdfa = MlflowFastPDFA(fast_pdfa)
+        #mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     
-    #save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
-    save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
-    #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
+        #save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
+        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
+        #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
@@ -142,6 +153,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params):
 def run():
   params = dict()
   time = 360
+  run_ensemble = True
   params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[3] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
@@ -157,7 +169,7 @@ def run():
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-      run_instance(ds, path_for_results_file, path_for_framework_models, params[ds])        
+      run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble)        
     
 if __name__ == '__main__':
     run()  
