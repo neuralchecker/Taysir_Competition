@@ -76,6 +76,12 @@ def show(result, ds):
 def get_path_for_result_file_name(path):
     return path+"/results_"+datetime.datetime.now().strftime("%d_%m_%Y_%H_%M_%S")+'.csv'
 
+def persist_ensemble_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time):
+    for model in learning_result.model._models:
+        instance = "ensemble_"+str(ds)+model.name
+        persist_results(instance, learning_result[model.name], stats, path_for_results_file, path_for_framework_models, max_extraction_time)
+
+
 def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time):
     result = dict()
     extracted_model = learning_result.model
@@ -129,12 +135,13 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         learner = EnsembleProbabilisticLearner(learning_functions=learners)
     else:
         learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
-    result = learner.learn(teacher)
-    show(result, DATASET)
+    result = learner.learn(teacher)    
     if ensemble:
+        print("Learning finished")
         mlflow_ensemble = MlflowProbabilisticModel(result.model)
         save_function(mlflow_ensemble, len(result.model.alphabet), target_model.name+"_FAST")
     else:
+        show(result, DATASET)
         #mlflow_pdfa = MlflowPDFA(result.model)
         fast_pdfa = FastPDFAConverter().to_fast_pdfa(result.model)
         #faster_pdfa = FastPDFAConverter().to_faster_pdfa(result.model)
@@ -148,7 +155,10 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     test_sequences = sequence_generator.generate_words(100)
     stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
     print(stats)
-    persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
+    if ensemble:
+        persist_ensemble_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
+    else:        
+        persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
   
 def run():
   params = dict()
