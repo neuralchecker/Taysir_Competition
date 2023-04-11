@@ -79,7 +79,7 @@ def get_path_for_result_file_name(path):
 def persist_ensemble_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time):
     for model in learning_result.model._models:
         instance = "ensemble_"+str(ds)+model.name
-        persist_results(instance, learning_result[model.name], stats, path_for_results_file, path_for_framework_models, max_extraction_time)
+        persist_results(instance, learning_result.info[model.name], stats, path_for_results_file, path_for_framework_models, max_extraction_time)
 
 
 def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time):
