@@ -6,14 +6,14 @@ import torch
 from multiprocessing import Pool
 
 def load_and_generate_cache(dataset):
+    dataset_generator = LastTokenWeightsPickleDataSetGenerator()
     pytorch_model = load_model(dataset)
     alphabet = get_alphabet_from_sequences(dataset)
     target_model = create_model(alphabet, pytorch_model, dataset)
     dataset_generator.genearte_dataset(target_model, 10_000_000, "./data_caches/"+target_model.name,10_000)
 
 
-def run():
-    dataset_generator = LastTokenWeightsPickleDataSetGenerator()
+def run():    
     datasets_to_run = list(range(1, 11))
     run_in_parallel = True
     if not run_in_parallel:
