@@ -6,9 +6,9 @@ import torch
 from multiprocessing import Pool
 
 def load_and_generate_cache(dataset):
-    pytorch_model = load_model(ds)
-    alphabet = get_alphabet_from_sequences(ds)
-    target_model = create_model(alphabet, pytorch_model, ds)
+    pytorch_model = load_model(dataset)
+    alphabet = get_alphabet_from_sequences(dataset)
+    target_model = create_model(alphabet, pytorch_model, dataset)
     dataset_generator.genearte_dataset(target_model, 10_000_000, "./data_caches/"+target_model.name,10_000)
 
 
