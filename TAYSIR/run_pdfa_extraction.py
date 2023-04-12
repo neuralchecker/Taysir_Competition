@@ -64,7 +64,7 @@ def get_alphabet_from_sequences(ds):
     return alphabet
 
 def create_model(alphabet, model, ds):
-  name = "Track: " + str(TRACK) + " - DataSet: " + str(ds)
+  name = "track_" + str(TRACK) + "_dataset_" + str(ds)
   target_model = PytorchLanguageModel(alphabet, model, name)
   return target_model
 
