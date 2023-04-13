@@ -1,7 +1,0 @@
-,Instance,Number of Extracted States,LastTokenQuery,EquivalenceQuery,NumberOfStatesExceeded,QueryLengthExceeded,TimeExceeded,Tree Depth,Inner Nodes,TimeBound,Accuracy,Unknown Results Percentage,Taysir MSE
-0,1,8,101598,2,False,False,True,2,2,360,0.0,0.0,0.00012811078441806145
-0,2,316,18112,10,False,False,True,2,6,360,0.0,0.0,1.1939723224136344e-05
-0,3,138,34544,6,False,False,True,2,5,360,0.0,0.0,0.15469059078368613
-0,5,1,6052,1,False,False,True,1,1,360,0.09,0.0,0.029689594463038375
-0,6,12,37527,2,False,False,True,2,2,360,0.0,0.0,0.0001355963147080837
-0,10,1,59262,1,False,False,True,1,1,360,0.04,0.0,3.446899008699114e-12
