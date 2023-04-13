@@ -5,12 +5,14 @@ from pythautomata.utilities.uniform_length_sequence_generator import UniformLeng
 from fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonConverter as FastPDFAConverter
 from pymodelextractor.learners.observation_tree_learners.bounded_pdfa_quantization_n_ary_tree_learner import BoundedPDFAQuantizationNAryTreeLearner
 from pymodelextractor.teachers.pac_batch_probabilistic_teacher import PACBatchProbabilisticTeacher
+from pymodelextractor.teachers.sample_batch_probabilistic_teacher import SampleBatchProbabilisticTeacher
 from pymodelextractor.teachers.pac_probabilistic_teacher import PACProbabilisticTeacher
 from pymodelextractor.learners.other_learners.ensemble_probabilistic_learner import EnsembleProbabilisticLearner
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
 from probabilistic_model_wrapper import MlflowProbabilisticModel
+from pymodelextractor.utils.pickle_data_loader import PickleDataLoader
 from fast_pdfa_wrapper import MlflowFastPDFA
 from faster_pdfa_wrapper import MlflowFasterPDFA
 from submit_tools_fix import save_function
@@ -109,7 +111,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds))
 
 
-def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble):
+def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache):
     DATASET = ds
     model = load_model(DATASET)
     alphabet = get_alphabet_from_sequences(DATASET)
@@ -125,8 +127,14 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 
     sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
     partitioner = QuantizationProbabilityPartitioner(partitions)
-    comparator = WFAPartitionComparator(partitioner)    
-    teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
+    comparator = WFAPartitionComparator(partitioner)   
+    
+    if use_cache:
+        dataloader = PickleDataLoader("./data_caches/"+target_model.name) 
+        teacher = SampleBatchProbabilisticTeacher(model = target_model, comparator = comparator, sequence_generator=sequence_generator, max_seq_length=3, full_prefix_set=True,  cache_from_dataloader=dataloader)
+    else:
+        teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
+    
     if ensemble:
         learners = []
         for i in range(5):
@@ -139,7 +147,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     if ensemble:
         print("Learning finished")
         mlflow_ensemble = MlflowProbabilisticModel(result.model)
-        save_function(mlflow_ensemble, len(result.model.alphabet), target_model.name+"_FAST")
+        save_function(mlflow_ensemble, len(result.model.alphabet), target_model.name)
     else:
         show(result, DATASET)
         #mlflow_pdfa = MlflowPDFA(result.model)
@@ -149,7 +157,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         #mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     
         #save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
-        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_FAST")
+        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name)
         #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
     test_sequences = sequence_generator.generate_words(100)
@@ -164,6 +172,8 @@ def run():
   params = dict()
   time = 360
   run_ensemble = True
+  use_cache = True
+
   params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[3] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":100, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
@@ -179,7 +189,7 @@ def run():
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-      run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble)        
+      run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache)        
     
 if __name__ == '__main__':
     run()  
