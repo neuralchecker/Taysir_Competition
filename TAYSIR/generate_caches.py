@@ -10,12 +10,12 @@ def load_and_generate_cache(dataset):
     pytorch_model = load_model(dataset)
     alphabet = get_alphabet_from_sequences(dataset)
     target_model = create_model(alphabet, pytorch_model, dataset)
-    dataset_generator.genearte_dataset(target_model, 10_000_000, "./data_caches/"+target_model.name,10_000)
+    dataset_generator.genearte_dataset(target_model, 1_000_000, "./data_caches/"+target_model.name,10_000)
 
 
 def run():    
     datasets_to_run = list(range(1, 11))
-    run_in_parallel = True
+    run_in_parallel = False
     if not run_in_parallel:
         for ds in datasets_to_run:
             load_and_generate_cache(ds)
