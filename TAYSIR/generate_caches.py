@@ -10,7 +10,7 @@ def load_and_generate_cache(dataset):
     pytorch_model = load_model(dataset)
     alphabet = get_alphabet_from_sequences(dataset)
     target_model = create_model(alphabet, pytorch_model, dataset)
-    dataset_generator.genearte_dataset(target_model, 1_000_000, "./data_caches/"+target_model.name,10_000)
+    dataset_generator.genearte_dataset(target_model, 300_000, "./data_caches/"+target_model.name,10_000)
 
 
 def run():    
