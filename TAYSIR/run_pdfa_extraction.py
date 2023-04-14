@@ -171,10 +171,10 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
   
 def run():
   params = dict()
-  time = 60
+  time = None
   max_sequence_length = 3
   run_ensemble = False
-  use_cache = True
+  use_cache = False
 
   params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
