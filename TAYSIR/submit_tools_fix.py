@@ -4,8 +4,8 @@ import tempfile
 import logging
 from pathlib import Path, PosixPath
 from random import choices
-
 import mlflow
+import datetime
 
 logging.getLogger("mlflow").setLevel(logging.DEBUG)
 
@@ -34,8 +34,12 @@ def save_function(func, alphabet_size, prefix):
     with tempfile.TemporaryDirectory() as tmp_dir:
         mlflow_path = Path(tmp_dir)
         
-        zip_path = f"predicted_models/{prefix}.zip"
+        e = datetime.datetime.now()
 
+        guid = "%s%s%s" % (e.hour, e.minute, e.second)
+        
+        zip_path = f"predicted_models/{prefix}{guid}.zip"
+    
         code_paths = list(Path().rglob('*.py'))
         #code_paths = [PosixPath('wrapper.py')]
           
