@@ -1,0 +1,49 @@
+{
+    "os": "Windows-10-10.0.19041-SP0",
+    "python": "3.9.1",
+    "heartbeatAt": "2023-04-15T00:02:56.703884",
+    "startedAt": "2023-04-15T00:02:55.693883",
+    "docker": null,
+    "cuda": null,
+    "args": null,
+    "state": "running",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "https://github.com/neuralchecker/Taysir_Competition.git",
+        "commit": "170829fc9cc359f866e20c7be3edf494c6179918"
+    },
+    "email": "franzmayrojeda@gmail.com",
+    "root": "C:/Users/franz/Repos/Taysir_Competition",
+    "host": "DESKTOP-36QKRHL",
+    "username": "franz",
+    "executable": "c:\\Users\\franz\\anaconda3\\envs\\pymodelextractor_exp\\python.exe",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 4000.0,
+        "min": 0.0,
+        "max": 4000.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 4000.0,
+            "min": 0.0,
+            "max": 4000.0
+        }
+    ],
+    "disk": {
+        "total": 232.26995849609375,
+        "used": 164.7914276123047
+    },
+    "gpu": "NVIDIA GeForce GTX 1050 Ti",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce GTX 1050 Ti",
+            "memory_total": 4294967296
+        }
+    ],
+    "memory": {
+        "total": 15.90250015258789
+    }
+}

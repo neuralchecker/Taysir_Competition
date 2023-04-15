@@ -1,0 +1,44 @@
+2023-04-14 21:01:06,488 INFO    MainThread:25580 [wandb_setup.py:_flush():76] Configure stats pid to 25580
+2023-04-14 21:01:06,488 INFO    MainThread:25580 [wandb_setup.py:_flush():76] Loading settings from C:\Users\franz\.config\wandb\settings
+2023-04-14 21:01:06,488 INFO    MainThread:25580 [wandb_setup.py:_flush():76] Loading settings from c:\Users\franz\Repos\Taysir_Competition\TAYSIR\wandb\settings
+2023-04-14 21:01:06,488 INFO    MainThread:25580 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-04-14 21:01:06,489 INFO    MainThread:25580 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program': '<python with no main file>'}
+2023-04-14 21:01:06,489 INFO    MainThread:25580 [wandb_setup.py:_flush():76] Applying login settings: {'api_key': '***REDACTED***'}
+2023-04-14 21:01:06,489 INFO    MainThread:25580 [wandb_init.py:_log_setup():507] Logging user logs to c:\Users\franz\Repos\Taysir_Competition\TAYSIR\wandb\run-20230414_210106-edeyj8uk\logs\debug.log
+2023-04-14 21:01:06,490 INFO    MainThread:25580 [wandb_init.py:_log_setup():508] Logging internal logs to c:\Users\franz\Repos\Taysir_Competition\TAYSIR\wandb\run-20230414_210106-edeyj8uk\logs\debug-internal.log
+2023-04-14 21:01:06,490 INFO    MainThread:25580 [wandb_init.py:init():547] calling init triggers
+2023-04-14 21:01:06,490 INFO    MainThread:25580 [wandb_init.py:init():554] wandb.init called with sweep_config: {}
+config: {'test': 'AAA'}
+2023-04-14 21:01:06,490 INFO    MainThread:25580 [wandb_init.py:init():571] re-initializing run, found existing run on stack: iopogu94
+2023-04-14 21:01:06,493 INFO    MainThread:25580 [wandb_run.py:_finish():1892] finishing run neural_checker/track_2/iopogu94
+2023-04-14 21:01:06,493 INFO    MainThread:25580 [jupyter.py:save_history():445] not saving jupyter history
+2023-04-14 21:01:06,493 INFO    MainThread:25580 [jupyter.py:save_ipynb():373] not saving jupyter notebook
+2023-04-14 21:01:06,494 INFO    MainThread:25580 [wandb_init.py:_jupyter_teardown():435] cleaning up jupyter logic
+2023-04-14 21:01:06,494 INFO    MainThread:25580 [wandb_run.py:_atexit_cleanup():2126] got exitcode: 0
+2023-04-14 21:01:06,494 INFO    MainThread:25580 [wandb_run.py:_restore():2109] restore
+2023-04-14 21:01:06,494 INFO    MainThread:25580 [wandb_run.py:_restore():2115] restore done
+2023-04-14 21:01:42,190 INFO    MainThread:25580 [wandb_init.py:init():595] starting backend
+2023-04-14 21:01:42,191 INFO    MainThread:25580 [wandb_init.py:init():599] setting up manager
+2023-04-14 21:01:42,197 INFO    MainThread:25580 [backend.py:_multiprocessing_setup():106] multiprocessing start_methods=spawn, using: spawn
+2023-04-14 21:01:42,200 INFO    MainThread:25580 [wandb_init.py:init():605] backend started and connected
+2023-04-14 21:01:42,201 INFO    MainThread:25580 [wandb_run.py:_label_probe_notebook():1237] probe notebook
+2023-04-14 21:01:42,201 INFO    MainThread:25580 [wandb_run.py:_label_probe_notebook():1247] Unable to probe notebook: 'NoneType' object has no attribute 'get'
+2023-04-14 21:01:42,201 INFO    MainThread:25580 [wandb_init.py:init():695] updated telemetry
+2023-04-14 21:01:42,297 INFO    MainThread:25580 [wandb_init.py:init():732] communicating run to backend with 60.0 second timeout
+2023-04-14 21:02:17,780 WARNING MainThread:25580 [wandb_init.py:init():1167] interrupted
+Traceback (most recent call last):
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\site-packages\wandb\sdk\wandb_init.py", line 1145, in init
+    run = wi.init()
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\site-packages\wandb\sdk\wandb_init.py", line 735, in init
+    result = run_init_handle.wait(
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\site-packages\wandb\sdk\lib\mailbox.py", line 283, in wait
+    found, abandoned = self._slot._get_and_clear(timeout=wait_timeout)
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\site-packages\wandb\sdk\lib\mailbox.py", line 130, in _get_and_clear
+    if self._wait(timeout=timeout):
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\site-packages\wandb\sdk\lib\mailbox.py", line 126, in _wait
+    return self._event.wait(timeout=timeout)
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\threading.py", line 574, in wait
+    signaled = self._cond.wait(timeout)
+  File "c:\Users\franz\anaconda3\envs\pymodelextractor_exp\lib\threading.py", line 316, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt
