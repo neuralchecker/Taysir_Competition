@@ -131,7 +131,6 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     partitions = params['partitions']
 
     sampling_type = "UniformLengthSequenceGenerator"
-
     sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
     partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)   
@@ -145,7 +144,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
     
     if ensemble:
-        learner = "EnsembleProbabilisticLearner"
+        learner_type = "EnsembleProbabilisticLearner"
         learners = []
         for i in range(5):
             l = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
@@ -153,12 +152,12 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         learner = EnsembleProbabilisticLearner(learning_functions=learners)
     else:
         learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
-        learner = "BoundedPDFAQuantizationNAryTreeLearner"
+        learner_type = "BoundedPDFAQuantizationNAryTreeLearner"
+    
     params.update({
             'teacher_type': teacher_type, 
             'sampling_type': sampling_type, 
-            'learner_type': learner,
-            'use_cache': use_cache
+            'learner_type': learner_type
         })
     wandb.init(
         # Set the project where this run will be logged
@@ -195,32 +194,31 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 
 def run():
   params = dict()
-  time = 360
+  time = None
   max_sequence_length = 3
   run_ensemble = False
   use_cache = False
 
-  params[1] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[2] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[3] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[3] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[4] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[5] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[6] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[7] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[6] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[7] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[8] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[9] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[10]= {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
+  params[9] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[10]= {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
 
   datasets_to_run = list(range(1, 11))
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-      try:
+      #try:
           run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache)        
-      except Exception as e:
-        print("EXPLOTO!")
-        print(type(e))
-        traceback.print_exc()
+     # except Exception as e:
+     #   print("EXPLOTO!")
+       ##traceback.print_exc()
         
 if __name__ == '__main__':
     run()  
