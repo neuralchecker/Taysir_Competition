@@ -11,6 +11,7 @@ from pymodelextractor.learners.other_learners.ensemble_probabilistic_learner imp
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
+from pythautomata.base_types.symbol import SymbolStr
 from pythautomata.base_types.sequence import Sequence
 from probabilistic_model_wrapper import MlflowProbabilisticModel
 from pymodelextractor.utils.pickle_data_loader import PickleDataLoader
@@ -64,7 +65,7 @@ def get_alphabet_and_validation_sequences(ds):
         for line in f:
             line = line.strip()
             seq = line.split(' ')
-            seq = [str(i) for i in seq[1:]]
+            seq = [SymbolStr(str(i)) for i in seq[1:]]
             sequences.append(Sequence(seq))
     return alphabet, sequences
 
