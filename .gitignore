@@ -3,3 +3,4 @@ __pycache__/
 output_models/
 predicted_models/
 data_caches/
+wandb/
