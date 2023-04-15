@@ -23,6 +23,7 @@ import pandas as pd
 import os
 import joblib
 import traceback
+import wandb
 
 # Ignore warnings
 import warnings
@@ -107,9 +108,12 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
                 'TimeBound': max_extraction_time
                 })
     result.update(stats)
-    dfresults = pd.DataFrame([result], columns = result.keys())     
-    dfresults.to_csv(path_for_results_file, mode = 'a', header = not os.path.exists(path_for_results_file)) 
-    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds))
+    wandb.config.update(result)
+    #dfresults = pd.DataFrame([result], columns = result.keys())     
+    #dfresults.to_csv(path_for_results_file, mode = 'a', header = not os.path.exists(path_for_results_file)) 
+    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds)+"_"+wandb.run.name)
+    
+    wandb.finish()
 
 
 def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache):
@@ -126,17 +130,22 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     max_extraction_time = params['max_extraction_time']
     partitions = params['partitions']
 
+    sampling_type = "UniformLengthSequenceGenerator"
+
     sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
     partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)   
     
     if use_cache:
         dataloader = PickleDataLoader("./data_caches/"+target_model.name) 
+        teacher_type = "SampleBatchProbabilisticTeacher"
         teacher = SampleBatchProbabilisticTeacher(model = target_model, comparator = comparator, sequence_generator=sequence_generator, max_seq_length=max_sequence_len, full_prefix_set=True,  cache_from_dataloader=dataloader)
     else:
+        teacher_type = "PACProbabilisticTeacher"
         teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
     
     if ensemble:
+        learner = "EnsembleProbabilisticLearner"
         learners = []
         for i in range(5):
             l = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
@@ -144,6 +153,19 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         learner = EnsembleProbabilisticLearner(learning_functions=learners)
     else:
         learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
+        learner = "BoundedPDFAQuantizationNAryTreeLearner"
+    params.update({
+            'teacher_type': teacher_type, 
+            'sampling_type': sampling_type, 
+            'learner_type': learner
+        })
+    wandb.init(
+        # Set the project where this run will be logged
+        project="taysir_track_2",
+        # Track hyperparameters and run metadata
+        config=params
+    )            
+    
     result = learner.learn(teacher)    
     if ensemble:
         print("Learning finished")
@@ -168,7 +190,8 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         persist_ensemble_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
     else:        
         persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
-  
+    wandb.finish()
+
 def run():
   params = dict()
   time = None
