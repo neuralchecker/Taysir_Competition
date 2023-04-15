@@ -95,14 +95,17 @@ def partial_accuracy(target_model, partial_model, partitioner, test_sequences):
 
 
 
-def compute_stats(target_model, extracted_model, partitioner, test_sequences = None, sample_size = 1000, max_seq_length = 20, seed = 42):
+def compute_stats(target_model, extracted_model, partitioner, test_sequences = None, validation_sequences = None,sample_size = 1000, max_seq_length = 20, seed = 42):
     if test_sequences is None:
         sg = UniformLengthSequenceGenerator(target_model.alphabet, max_seq_length, seed)
         test_sequences = sg.generate_words(sample_size)  
     result= dict()
 
-    result.update(partial_accuracy(target_model, extracted_model, partitioner,test_sequences))
-    result.update({"Taysir MSE": taysir_error_rate(target_model, extracted_model,test_sequences)})
+    result['Validation Accuracy']  = partial_accuracy(target_model, extracted_model, partitioner,validation_sequences)['Accuracy']
+    result['Test Accuracy'] = partial_accuracy(target_model, extracted_model, partitioner,test_sequences)['Accuracy']
+    
+    result["Validation Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,validation_sequences)    
+    result["Test Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,test_sequences)
     return result
 
 def time_fun(function, *args):    

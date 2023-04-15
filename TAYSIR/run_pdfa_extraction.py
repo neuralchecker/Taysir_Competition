@@ -11,6 +11,7 @@ from pymodelextractor.learners.other_learners.ensemble_probabilistic_learner imp
 from pythautomata.model_comparators.wfa_partition_comparison_strategy import WFAPartitionComparator
 from pythautomata.utilities.probability_partitioner import QuantizationProbabilityPartitioner
 from pythautomata.base_types.alphabet import Alphabet
+from pythautomata.base_types.sequence import Sequence
 from probabilistic_model_wrapper import MlflowProbabilisticModel
 from pymodelextractor.utils.pickle_data_loader import PickleDataLoader
 from fast_pdfa_wrapper import MlflowFastPDFA
@@ -49,7 +50,7 @@ def load_model(ds):
     model.eval()
     return model
 
-def get_alphabet_from_sequences(ds):
+def get_alphabet_and_validation_sequences(ds):
     file = f"datasets/2.{ds}.taysir.valid.words"
     alphabet = None
     sequences = []
@@ -63,9 +64,9 @@ def get_alphabet_from_sequences(ds):
         for line in f:
             line = line.strip()
             seq = line.split(' ')
-            seq = [int(i) for i in seq[1:]]
-            sequences.append(seq)
-    return alphabet
+            seq = [str(i) for i in seq[1:]]
+            sequences.append(Sequence(seq))
+    return alphabet, sequences
 
 def create_model(alphabet, model, ds):
   name = "track_" + str(TRACK) + "_dataset_" + str(ds)
@@ -119,7 +120,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
 def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache):
     DATASET = ds
     model = load_model(DATASET)
-    alphabet = get_alphabet_from_sequences(DATASET)
+    alphabet, validation_sequences = get_alphabet_and_validation_sequences(DATASET)
     target_model = create_model(alphabet, model, DATASET) 
     max_sequence_len = params['max_sequence_len']
     min_sequence_len = params['min_sequence_len']
@@ -183,8 +184,8 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name)
         #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
-    test_sequences = sequence_generator.generate_words(100)
-    stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences)
+    test_sequences = sequence_generator.generate_words(1000)
+    stats = metrics.compute_stats(target_model, result.model,partitioner, test_sequences, validation_sequences)
     print(stats)
     if ensemble:
         persist_ensemble_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
