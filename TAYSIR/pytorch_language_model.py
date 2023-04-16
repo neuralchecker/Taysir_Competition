@@ -17,7 +17,7 @@ class PytorchLanguageModel(ProbabilisticModel):
         self._alphabet_len = len(alphabet) + 1
         self._model = model
         self._name = name
-        self._terminal_symbol = SymbolStr(self._alphabet_len)
+        self._terminal_symbol = SymbolStr(str(self._alphabet_len))
         
     @property
     def name(self) -> str:

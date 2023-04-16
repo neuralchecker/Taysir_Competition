@@ -196,7 +196,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 
 def run():
   params = dict()
-  time = None
+  time = 60
   max_sequence_length = 2
   run_ensemble = False
   use_cache = False
