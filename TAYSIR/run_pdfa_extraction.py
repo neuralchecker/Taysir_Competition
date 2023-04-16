@@ -216,11 +216,12 @@ def run():
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-      #try:
+    try:
           run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache)        
-     # except Exception as e:
-     #   print("EXPLOTO!")
-       ##traceback.print_exc()
+    except Exception as e:
+       print("EXPLOTO!")
+       traceback.print_exc()
+       wandb.finish()
         
 if __name__ == '__main__':
     run()  
