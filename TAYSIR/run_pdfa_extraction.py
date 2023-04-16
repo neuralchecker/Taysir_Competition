@@ -118,7 +118,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     wandb.finish()
 
 
-def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache):
+def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache, use_sampling_teacher):
     DATASET = ds
     model = load_model(DATASET)
     alphabet, validation_sequences = get_alphabet_and_validation_sequences(DATASET)
@@ -136,14 +136,15 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
     partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)   
-    
+    dataloader = None
     if use_cache:
         dataloader = PickleDataLoader("./data_caches/"+target_model.name) 
+    if use_sampling_teacher:    
         teacher_type = "SampleBatchProbabilisticTeacher"
         teacher = SampleBatchProbabilisticTeacher(model = target_model, comparator = comparator, sequence_generator=sequence_generator, max_seq_length=max_sequence_len, full_prefix_set=True,  cache_from_dataloader=dataloader)
     else:
         teacher_type = "PACProbabilisticTeacher"
-        teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False)
+        teacher  = PACProbabilisticTeacher(target_model, epsilon = epsilon, delta = delta, max_seq_length = None, comparator = comparator, sequence_generator=sequence_generator, compute_epsilon_star=False, cache_from_dataloader=dataloader)
     
     if ensemble:
         learner_type = "EnsembleProbabilisticLearner"
@@ -200,7 +201,8 @@ def run():
   max_sequence_length = 2
   run_ensemble = False
   use_cache = False
-
+  use_sampling_teacher = True
+  
   params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[3] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
@@ -217,7 +219,7 @@ def run():
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
     try:
-          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache)        
+          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher)        
     except Exception as e:
        print("EXPLOTO!")
        traceback.print_exc()
