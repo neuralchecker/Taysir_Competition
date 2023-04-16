@@ -101,7 +101,7 @@ def compute_stats(target_model, extracted_model, partitioner, test_sequences = N
         test_sequences = sg.generate_words(sample_size)  
     result= dict()
 
-    result['Validation Accuracy']  = partial_accuracy(target_model, extracted_model, partitioner,validation_sequences)['Accuracy']
+    #result['Validation Accuracy']  = partial_accuracy(target_model, extracted_model, partitioner,validation_sequences)['Accuracy']
     result['Test Accuracy'] = partial_accuracy(target_model, extracted_model, partitioner,test_sequences)['Accuracy']
     
     result["Validation Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,validation_sequences)    
