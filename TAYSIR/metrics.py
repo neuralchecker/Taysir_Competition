@@ -103,9 +103,10 @@ def compute_stats(target_model, extracted_model, partitioner, test_sequences = N
 
     #result['Validation Accuracy']  = partial_accuracy(target_model, extracted_model, partitioner,validation_sequences)['Accuracy']
     result['Test Accuracy'] = partial_accuracy(target_model, extracted_model, partitioner,test_sequences)['Accuracy']
-    
-    result["Validation Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,validation_sequences)    
+    print(type(extracted_model.terminal_symbol))
+    print(type(extracted_model.terminal_symbol.value))      
     result["Test Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,test_sequences)
+    result["Validation Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,validation_sequences)  
     return result
 
 def time_fun(function, *args):    

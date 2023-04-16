@@ -65,7 +65,7 @@ def get_alphabet_and_validation_sequences(ds):
         for line in f:
             line = line.strip()
             seq = line.split(' ')[1:]
-            seq = [SymbolStr(str(i)) for i in seq[1:]]
+            seq = [SymbolStr(i) for i in seq[1:]]
             print(seq)
             sequences.append(Sequence(seq))
     return alphabet, sequences
@@ -198,7 +198,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 def run():
   params = dict()
   time = None
-  max_sequence_length = 3
+  max_sequence_length = 2
   run_ensemble = False
   use_cache = False
 
