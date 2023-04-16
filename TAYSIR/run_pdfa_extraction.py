@@ -65,8 +65,7 @@ def get_alphabet_and_validation_sequences(ds):
         for line in f:
             line = line.strip()
             seq = line.split(' ')[1:]
-            seq = [SymbolStr(i) for i in seq[1:]]
-            print(seq)
+            seq = [SymbolStr(i) for i in seq[1:]]            
             sequences.append(Sequence(seq))
     return alphabet, sequences
 
