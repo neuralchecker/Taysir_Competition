@@ -32,7 +32,8 @@ def persist_results(dataset, learning_result, max_extraction_time):
                 'EquivalenceQuery': learning_result.info['equivalence_queries_count'], 
                 'MembershipQuery': learning_result.info['membership_queries_count'], 
                 'Duration': learning_result.info['duration'], 
-                'TimeBound': max_extraction_time
+                'TimeBound': max_extraction_time,
+                'HistoricModelsAmount': len(learning_result.info['history'])
                 })
 
     wandb.config.update(result)
@@ -118,17 +119,20 @@ def run_instance(dataset, params):
 def run():
     params = dict()
     max_extraction_time = 60
-    max_sequence_len = 80
+    max_sequence_len = 100
     min_sequence_len = 10
     epsilon = 0.01
     delta = 0.01
-    number_of_datasets = 1
     
-    for i in range(1, number_of_datasets + 1):
-        params[f"DATASET_{i}"] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
-                                   "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
+    # Choose datasets to run
+    params['DATASET_8'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
+                           "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
+    params['DATASET_10'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
+                           "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
+    params['DATASET_11'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
+                           "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
 
-    datasets_to_run = list(range(1, number_of_datasets + 1))
+    datasets_to_run = [8,10,11]
     for ds in datasets_to_run:
         try:
             dataset = f"DATASET_{ds}"

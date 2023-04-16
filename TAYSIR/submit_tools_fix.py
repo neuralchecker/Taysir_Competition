@@ -38,7 +38,7 @@ def save_function(func, alphabet_size, prefix):
 
         guid = "%s%s%s" % (e.hour, e.minute, e.second)
         
-        zip_path = f"predicted_models/{prefix}{guid}.zip"
+        zip_path = f"predicted_models/{prefix}{"-"}{guid}.zip"
     
         code_paths = list(Path().rglob('*.py'))
         #code_paths = [PosixPath('wrapper.py')]
