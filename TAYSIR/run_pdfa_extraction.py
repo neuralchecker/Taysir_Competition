@@ -202,7 +202,7 @@ def run():
   run_ensemble = False
   use_cache = False
   use_sampling_teacher = True
-  
+
   params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[3] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
@@ -219,7 +219,7 @@ def run():
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
     try:
-          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher)        
+          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher)        
     except Exception as e:
        print("EXPLOTO!")
        traceback.print_exc()
