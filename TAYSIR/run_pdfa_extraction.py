@@ -76,7 +76,7 @@ def create_model(alphabet, model, ds):
 
 def show(result, ds):
    print("DATASET: " + str(ds) + " learned with " + str(result.info['equivalence_queries_count']) + 
-          " equivalence queries and " + str(result.info['last_token_weight_queries_count']) + "membership queries "+
+          " equivalence queries and " + str(result.info['last_token_weight_queries_count']) + " membership queries "+
           " with " + str(len(result.model.weighted_states)) + " states")
 
 def get_path_for_result_file_name(path):
