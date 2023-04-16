@@ -182,7 +182,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         #mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     
         #save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
-        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name)
+        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_" + wandb.run.name)
         #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
     test_sequences = sequence_generator.generate_words(1000)
