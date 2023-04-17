@@ -195,7 +195,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     if ensemble:
         persist_ensemble_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
     else:        
-        persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
+        persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time, log_to_wandb)
     if log_to_wandb: wandb.finish()
 
 def run():
