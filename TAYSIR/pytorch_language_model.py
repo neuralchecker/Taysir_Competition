@@ -33,7 +33,10 @@ class PytorchLanguageModel(ProbabilisticModel):
     
     def process_query(self, sequence):        
         adapted_sequence = self._adapt_sequence(sequence, add_terminal=len(sequence) == 0)       
-        return utils.next_symbols_probas(adapted_sequence, self._model)
+        if len(sequence)==0:
+            return utils.full_next_symbols_probas(adapted_sequence, self._model)[1]
+        else:
+            return utils.next_symbols_probas(adapted_sequence, self._model)
     
     def _adapt_sequence(self, sequence, add_terminal = False):
         """
@@ -149,10 +152,12 @@ class PytorchLanguageModel(ProbabilisticModel):
             #    adapted_sequences_np = adapted_sequences_np.reshape((-1, 1, len(adapted_sequences_np[0]))) 
             if length == 0:                
                 seq = Sequence()
-                adapted_sequence = self._adapt_sequence(seqs[0], add_terminal=True)    
-                adapted_sequence_np = np.asarray(adapted_sequence)
-                result = utils.full_next_symbols_probas(adapted_sequence_np, self._model)
-                model_evaluation = [result[1]]
+                #adapted_sequence = self._adapt_sequence(seqs[0], add_terminal=True)    
+                #adapted_sequence_np = np.asarray(adapted_sequence)
+                #result = utils.full_next_symbols_probas(adapted_sequence_np, self._model)
+                #model_evaluation = [result[0]]
+                result = self.process_query(seq)
+                model_evaluation =[result]
             else:
                 model_evaluation = utils.full_next_symbols_probas_batch(adapted_sequences_np, self._model)[:,-1]
             seqs_to_query.extend(seqs)

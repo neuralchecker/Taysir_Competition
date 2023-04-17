@@ -88,7 +88,7 @@ def persist_ensemble_results(ds, learning_result, stats, path_for_results_file, 
         persist_results(instance, learning_result.info[model.name], stats, path_for_results_file, path_for_framework_models, max_extraction_time)
 
 
-def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time):
+def persist_results(ds, learning_result, stats, path_for_results_file, path_for_framework_models, max_extraction_time, log_to_wandb):
     result = dict()
     extracted_model = learning_result.model
     if learning_result.info['observation_tree'] is None:
@@ -110,15 +110,16 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
                 'TimeBound': max_extraction_time
                 })
     result.update(stats)
-    wandb.config.update(result)
+    if log_to_wandb: wandb.config.update(result)
     #dfresults = pd.DataFrame([result], columns = result.keys())     
-    #dfresults.to_csv(path_for_results_file, mode = 'a', header = not os.path.exists(path_for_results_file)) 
-    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds)+"_"+wandb.run.name)
+    #dfresults.to_csv(path_for_results_file, mode = 'a', header = not os.path.exists(path_for_results_file))
+    name = wandb.run.name if log_to_wandb else "test" 
+    joblib.dump(value=learning_result.model, filename=path_for_framework_models+"/"+str(ds)+"_"+name)
     
-    wandb.finish()
+    if log_to_wandb: wandb.finish()
 
 
-def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache, use_sampling_teacher):
+def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache, use_sampling_teacher, log_to_wandb):
     DATASET = ds
     model = load_model(DATASET)
     alphabet, validation_sequences = get_alphabet_and_validation_sequences(DATASET)
@@ -162,12 +163,13 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
             'sampling_type': sampling_type, 
             'learner_type': learner_type
         })
-    wandb.init(
-        # Set the project where this run will be logged
-        project="taysir_track_2",
-        # Track hyperparameters and run metadata
-        config=params
-    )            
+    if log_to_wandb:
+        wandb.init(
+            # Set the project where this run will be logged
+            project="taysir_track_2",
+            # Track hyperparameters and run metadata
+            config=params
+        )            
     
     result = learner.learn(teacher)    
     if ensemble:
@@ -183,7 +185,8 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         #mlflow_faster_pdfa = MlflowFasterPDFA(faster_pdfa)
     
         #save_function(mlflow_pdfa, len(result.model.alphabet), target_model.name+"_SLOW")
-        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_" + wandb.run.name)
+        name = wandb.run.name if log_to_wandb else "test"
+        save_function(mlflow_fast_pdfa, len(result.model.alphabet), target_model.name+"_" + name)
         #save_function(mlflow_faster_pdfa, len(result.model.alphabet), target_model.name+"_FASTER")
 
     test_sequences = sequence_generator.generate_words(1000)
@@ -193,15 +196,16 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
         persist_ensemble_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
     else:        
         persist_results(DATASET, result, stats, path_for_results_file, path_for_framework_models, max_extraction_time)
-    wandb.finish()
+    if log_to_wandb: wandb.finish()
 
 def run():
   params = dict()
-  time = 60
+  time = None
   max_sequence_length = 2
   run_ensemble = False
   use_cache = False
   use_sampling_teacher = True
+  log_to_wandb = False
 
   params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
@@ -218,12 +222,12 @@ def run():
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-    try:
-          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher)        
-    except Exception as e:
-       print("EXPLOTO!")
-       traceback.print_exc()
-       wandb.finish()
+    #try:
+          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb)        
+    #except Exception as e:
+    #   print("EXPLOTO!")
+    #   traceback.print_exc()
+    #   if log_to_wandb: wandb.finish()
         
 if __name__ == '__main__':
     run()  

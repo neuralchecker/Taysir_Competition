@@ -25,7 +25,8 @@ def predict(sequence, model):
             out = model(word)
             return (out.logits.argmax().item())
 
-def full_next_symbols_probas(sequence, model):      
+def full_next_symbols_probas(sequence, model):   
+    return full_next_symbols_probas_batch([sequence],model)[0]   
     if not hasattr(model, 'distilbert'):
         value, hiddens = model.forward_lm(model.one_hot_encode(sequence))
         return value.detach().numpy()
