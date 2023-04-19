@@ -22,6 +22,15 @@ import traceback
 import wandb
 from fast_dfa_converter import FastDeterministicFiniteAutomatonConverter as Converter
 
+def test_model(target_model, model, sequence_generator, sequence_amount = 1000):
+    sequences = sequence_generator.generate_words(sequence_amount)
+    
+    results = []
+    for sequence in sequences:
+        results.append(target_model.process_query(sequence) != model.process_query(sequence))
+    
+    return np.mean(results)
+
 def persist_results(dataset, learning_result, max_extraction_time):
     result = dict()
     extracted_model = learning_result.model
@@ -116,23 +125,27 @@ def run_instance(dataset, params):
           " equivalence queries and " + str(res.info['membership_queries_count']) + 
           " membership queries with a duration of " + str(res.info['duration']) + "s with " + str(len(res.model.states)) + " states")
     
+    counter = 0
+    for model in res.info['history']:
+        counter += 1
+        results = []
+        for i in range(10):
+            results.append(test_model(model, target_model, sequence_generator))
+        print("Model history " + str(counter) + " with error: " + str(np.mean(results)))
+    
 def run():
     params = dict()
-    max_extraction_time = 60
-    max_sequence_len = 100
-    min_sequence_len = 10
-    epsilon = 0.01
+    max_extraction_time = -1#3 * 60 * 60
+    max_sequence_len = 25
+    min_sequence_len = 17
+    epsilon = 0.04
     delta = 0.01
     
     # Choose datasets to run
-    params['DATASET_8'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
-                           "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
-    params['DATASET_10'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
-                           "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
-    params['DATASET_11'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
+    params['DATASET_1'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
                            "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
 
-    datasets_to_run = [8,10,11]
+    datasets_to_run = [1]
     for ds in datasets_to_run:
         try:
             dataset = f"DATASET_{ds}"
