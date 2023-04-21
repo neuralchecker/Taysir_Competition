@@ -1,4 +1,5 @@
 import torch
+torch.set_num_threads(4)
 import mlflow
 import pickle
 from utils import predict, PytorchInference
@@ -125,6 +126,8 @@ def run_instance(DATASET, alphabet, params, counter, past_model_states_amount, o
     print("DATASET: " + str(DATASET) + " learned with " + str(res.info['equivalence_queries_count']) + 
           " equivalence queries and " + str(res.info['membership_queries_count']) + 
           " membership queries with a duration of " + str(res.info['duration']) + "s with " + str(len(res.model.states)) + " states")
+    print("min_sequence_len:", min_sequence_len)
+    print("max_sequence_len:", max_sequence_len)
     
     if past_model_states_amount < len(res.model.states) + sigma:
         results = []
@@ -139,13 +142,13 @@ def run_instance(DATASET, alphabet, params, counter, past_model_states_amount, o
     return len(res.model.states), observation_table, mean_error
     
 def run():
-    dataset_to_run = 11
+    dataset_to_run = 8
     alphabet = get_alphabet(dataset_to_run)
     past_model_states_amount = 0
     counter = 0
     max_extraction_time = 3 * 60 * 60
-    max_sequence_len = 10
-    min_sequence_len = 2
+    max_sequence_len = 1000
+    min_sequence_len = 200
     epsilon = 0.1
     delta = 0.1
     sigma = 5
