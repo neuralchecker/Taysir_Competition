@@ -102,9 +102,7 @@ def compute_stats(target_model, extracted_model, partitioner, test_sequences = N
     result= dict()
 
     #result['Validation Accuracy']  = partial_accuracy(target_model, extracted_model, partitioner,validation_sequences)['Accuracy']
-    result['Test Accuracy'] = partial_accuracy(target_model, extracted_model, partitioner,test_sequences)['Accuracy']
-    print(type(extracted_model.terminal_symbol))
-    print(type(extracted_model.terminal_symbol.value))      
+    result['Test Accuracy'] = partial_accuracy(target_model, extracted_model, partitioner,test_sequences)['Accuracy']    
     result["Test Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,test_sequences)
     result["Validation Taysir MSE"] =  taysir_error_rate(target_model, extracted_model,validation_sequences)  
     return result

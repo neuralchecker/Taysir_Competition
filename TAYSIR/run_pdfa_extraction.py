@@ -205,9 +205,9 @@ def run():
   run_ensemble = False
   use_cache = True
   use_sampling_teacher = True
-  log_to_wandb = True
+  log_to_wandb = False
 
-  params[1] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[3] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[4] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
