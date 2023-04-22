@@ -23,6 +23,11 @@ from fast_pdfa_converter import FastProbabilisticDeterministicFiniteAutomatonCon
 
 from fast_pdfa_wrapper import MlflowFastPDFA
 from submit_tools_fix import save_function
+from pythautomata.base_types.alphabet import Alphabet
+from pythautomata.base_types.symbol import SymbolStr
+from pythautomata.base_types.sequence import Sequence
+
+import utils
     
 def run():
     dataset_amount = 10
@@ -45,7 +50,7 @@ def run():
             print("The alphabet contains", nb_letters, "symbols.")
             print("The model is a transformer (DistilBertForSequenceClassification)")
     TRACK = 2 #always for this track
-    DATASET = 1
+    DATASET = 7
     model_name = f"models/2.{DATASET}.taysir.model"
     alphabet = None
     sequences = []
@@ -69,7 +74,15 @@ def run():
     model.eval()
     name = "track_" + str(TRACK) + "_dataset_" + str(DATASET)
     target_model = PytorchLanguageModel(alphabet, model, name)
-    
+    #TESTTT--------
+    symbols = list(target_model.alphabet.symbols)
+    symbols.sort()
+    symbols = [target_model.terminal_symbol] + symbols
+    seq_010 = Sequence([SymbolStr('0'), SymbolStr('1'), SymbolStr('0')])
+    target_last_token_weights = target_model.get_last_token_weights(seq_010, symbols)
+    target_seq_proba = target_model.sequence_probability(seq_010)
+    utils_seq_proba = utils.sequence_probability([0,1,0], model)
+    utils_last_token_weights = utils.next_symbols_probas([0,1,0], model)
     #LastTokenWeightsPickleDataSetGenerator().genearte_dataset(target_model, 1000, "./test",100)
 
     epsilon = 0.1
