@@ -155,7 +155,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
             learners.append(l.learn)        
         learner = EnsembleProbabilisticLearner(learning_functions=learners)
     else:
-        learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True)
+        learner = BoundedPDFAQuantizationNAryTreeLearner(partitioner, max_states, max_query_length, max_extraction_time, generate_partial_hipothesis = True, pre_cache_queries_for_building_hipothesis = False,  check_probabilistic_hipothesis = False, mean_distribution_for_partial_hipothesis=True, exhaust_counterexample = True)
         learner_type = "BoundedPDFAQuantizationNAryTreeLearner"
     
     params.update({
@@ -200,34 +200,34 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 
 def run():
   params = dict()
-  time = None
+  time = 1500
   max_sequence_length = 2
   run_ensemble = False
   use_cache = True
   use_sampling_teacher = True
-  log_to_wandb = False
+  log_to_wandb = True
 
-  params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[2] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[3] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[4] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[5] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[6] = {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[7] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[8] = {"max_extraction_time":time, "partitions":20, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[9] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[10]= {"max_extraction_time":time, "partitions":1000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
+  params[1] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[2] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[3] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[4] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[5] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[6] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[7] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[8] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[9] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[10]= {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
 
-  datasets_to_run = [1]
+  datasets_to_run = list(range(10))
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
-    #try:
+    try:
           run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb)        
-    #except Exception as e:
-    #   print("EXPLOTO!")
-    #   traceback.print_exc()
-    #   if log_to_wandb: wandb.finish()
+    except Exception as e:
+       print("EXPLOTO!")
+       traceback.print_exc()
+       if log_to_wandb: wandb.finish()
         
 if __name__ == '__main__':
     run()  
