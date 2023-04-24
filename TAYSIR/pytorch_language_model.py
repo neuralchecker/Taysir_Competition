@@ -57,7 +57,7 @@ class PytorchLanguageModel(ProbabilisticModel):
         return result 
 
     def _get_symbol_index(self, symbol):
-        return int(symbol.value)
+        return int(symbol.value)+1
 
     def next_symbol_probas(self, sequence: Sequence):
         """
