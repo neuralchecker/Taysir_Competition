@@ -17,6 +17,7 @@ from probabilistic_model_wrapper import MlflowProbabilisticModel
 from pymodelextractor.utils.pickle_data_loader import PickleDataLoader
 from fast_pdfa_wrapper import MlflowFastPDFA
 from faster_pdfa_wrapper import MlflowFasterPDFA
+from uniform_from_array_sequence_generator import UniformFromArraySequenceGenerator
 from submit_tools_fix import save_function
 import torch
 import metrics
@@ -119,7 +120,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     if log_to_wandb: wandb.finish()
 
 
-def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache, use_sampling_teacher, log_to_wandb):
+def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache, use_sampling_teacher, log_to_wandb, sequence_generator_from_valid):
     DATASET = ds
     model = load_model(DATASET)
     alphabet, validation_sequences = get_alphabet_and_validation_sequences(DATASET)
@@ -133,8 +134,15 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     max_extraction_time = params['max_extraction_time']
     partitions = params['partitions']
 
-    sampling_type = "UniformLengthSequenceGenerator"
-    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
+
+    if sequence_generator_from_valid:
+        sampling_type = "UniformFromArraySequenceGenerator"
+        lengths = [len(x) for x in validation_sequences]
+        sequence_generator = UniformFromArraySequenceGenerator(alphabet, lengths, 28)  
+    else:
+        sampling_type = "UniformLengthSequenceGenerator"
+        sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len, min_seq_length=min_sequence_len)  
+
     partitioner = QuantizationProbabilityPartitioner(partitions)
     comparator = WFAPartitionComparator(partitioner)   
     dataloader = None
@@ -201,6 +209,7 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 def run():
   params = dict()
   time = 1500
+  sequence_generator_from_valid = True
   max_sequence_length = 2
   run_ensemble = False
   use_cache = True
@@ -223,7 +232,7 @@ def run():
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
   for ds in datasets_to_run:
     try:
-          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb)        
+          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb, sequence_generator_from_valid=sequence_generator_from_valid)        
     except Exception as e:
        print("EXPLOTO!")
        traceback.print_exc()
