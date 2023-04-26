@@ -14,7 +14,7 @@ class UniformFromArraySequenceGenerator(SequenceGenerator):
         self._length_distribution = lenghts 
        
     def generate_words(self, number_of_words: int):
-        lengths = random.sample(self._length_distribution, number_of_words)
+        lengths = random.choices(self._length_distribution, k = number_of_words)
         result = np.empty(number_of_words, dtype=Sequence)
         for index in range(number_of_words):
             length = lengths[index]
