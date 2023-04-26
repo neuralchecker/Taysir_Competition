@@ -27,6 +27,8 @@ import os
 import joblib
 import traceback
 import wandb
+import multiprocessing
+from functools import partial
 
 # Ignore warnings
 import warnings
@@ -121,6 +123,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
 
 
 def run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble, use_cache, use_sampling_teacher, log_to_wandb, sequence_generator_from_valid):
+    params = params[ds]
     DATASET = ds
     model = load_model(DATASET)
     alphabet, validation_sequences = get_alphabet_and_validation_sequences(DATASET)
@@ -208,15 +211,15 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 
 def run():
   params = dict()
-  time = 1500
-  sequence_generator_from_valid = True
+  time = None
+  sequence_generator_from_valid = False
   max_sequence_length = 2
   run_ensemble = False
   use_cache = True
   use_sampling_teacher = True
-  log_to_wandb = True
+  log_to_wandb = False
 
-  params[1] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[2] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[3] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
   params[4] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
@@ -228,16 +231,29 @@ def run():
   params[10]= {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
 
   datasets_to_run = list(range(10))
+  datasets_to_run = [1,2]
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
-  for ds in datasets_to_run:
+
+  parallel = True
+  if parallel:
     try:
-          run_instance(ds, path_for_results_file, path_for_framework_models, params[ds], ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb, sequence_generator_from_valid=sequence_generator_from_valid)        
+        pool = multiprocessing.Pool()
+        partial_run_instance = partial( run_instance, path_for_results_file = path_for_results_file, path_for_framework_models = path_for_framework_models, params = params,  ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb, sequence_generator_from_valid=sequence_generator_from_valid)  
+        results = pool.map(partial_run_instance, datasets_to_run)
     except Exception as e:
-       print("EXPLOTO!")
-       traceback.print_exc()
-       if log_to_wandb: wandb.finish()
-        
+        print("EXPLOTO!")
+        traceback.print_exc()
+        if log_to_wandb: wandb.finish()
+  else:
+      for ds in datasets_to_run:
+        try:
+            run_instance(ds, path_for_results_file, path_for_framework_models, params, ensemble = run_ensemble, use_cache=use_cache, use_sampling_teacher = use_sampling_teacher, log_to_wandb = log_to_wandb, sequence_generator_from_valid=sequence_generator_from_valid)        
+        except Exception as e:
+            print("EXPLOTO!")
+            traceback.print_exc()
+            if log_to_wandb: wandb.finish()
+
 if __name__ == '__main__':
     run()  
 
