@@ -211,9 +211,9 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 
 def run():
   params = dict()
-  time = 10800
+  time = 360
   sequence_generator_from_valid = True
-  max_sequence_length = 3
+  max_sequence_length = 20
   run_ensemble = False
   use_cache = True
   use_sampling_teacher = False
@@ -235,7 +235,7 @@ def run():
   path_for_framework_models = "./extraction_results"
   path_for_results_file = get_path_for_result_file_name(path_for_framework_models)
 
-  parallel = True
+  parallel = False
   if parallel:
     try:
         pool = multiprocessing.Pool()
