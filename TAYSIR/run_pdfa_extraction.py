@@ -100,8 +100,7 @@ def persist_results(ds, learning_result, stats, path_for_results_file, path_for_
     else:
         tree_depth = learning_result.info['observation_tree'].depth
         inner_nodes = len(learning_result.info['observation_tree'].inner_nodes)
-    result.update({ 
-                'Instance': ds,
+    result.update({                 
                 'Number of Extracted States': len(extracted_model.weighted_states) ,   
                 'LastTokenQuery': learning_result.info['last_token_weight_queries_count'], 
                 'EquivalenceQuery': learning_result.info['equivalence_queries_count'], 
@@ -172,7 +171,8 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
     params.update({
             'teacher_type': teacher_type, 
             'sampling_type': sampling_type, 
-            'learner_type': learner_type
+            'learner_type': learner_type,
+            'Instance': ds
         })
     if log_to_wandb:
         wandb.init(
