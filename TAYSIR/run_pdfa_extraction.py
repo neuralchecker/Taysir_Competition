@@ -212,23 +212,23 @@ def run_instance(ds, path_for_results_file, path_for_framework_models, params, e
 def run():
   params = dict()
   time = 10800
-  sequence_generator_from_valid = False
-  max_sequence_length = 2
+  sequence_generator_from_valid = True
+  max_sequence_length = 3
   run_ensemble = False
   use_cache = True
-  use_sampling_teacher = True
+  use_sampling_teacher = False
   log_to_wandb = True
 
-  params[1] = {"max_extraction_time":time, "partitions":10, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[2] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[3] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[4] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[5] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[6] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[7] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[8] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[9] = {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
-  params[10]= {"max_extraction_time":time, "partitions":100, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
+  params[1] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[2] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[3] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[4] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[5] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[6] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[7] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[8] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[9] = {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":1000}
+  params[10]= {"max_extraction_time":time, "partitions":10000, "max_sequence_len":max_sequence_length, "min_sequence_len":2, "epsilon":0.01, "delta":0.01, "max_states":1000000, "max_query_length":500}
 
   datasets_to_run = list(range(10))
   datasets_to_run = [1,2,3,5,6,10]
