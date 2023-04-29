@@ -1,3 +1,0 @@
-mlflow<3,>=2.3
-cloudpickle==2.0.0
-numpy==1.21.4
