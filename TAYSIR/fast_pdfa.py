@@ -61,15 +61,16 @@ class FastProbabilisticDeterministicFiniteAutomaton():
         #     actual_state = trans_fun[actual_state][symbol]
         # return product
         actual_state = self.initial_state
-        #product = 1
+        product = 1
         both_funs = self.both_functions.get    
         probs = []    
         for symbol in sequence:
             next_state, proba = both_funs(actual_state)[symbol]
             probs.append(proba)
-            #product *= proba
-            #if symbol == self.terminal_symbol:
-            #    assert len(remaining) == 1, "Terminal symbol should be the last symbol of the sequence"
-             #   return product
+            product *= proba
+            if symbol == self.terminal_symbol:
+                #assert len(remaining) == 1, "Terminal symbol should be the last symbol of the sequence"
+                return product
             actual_state = next_state
-        return np.array(probs, dtype=np.float32).prod()
+        return product
+        #return np.array(probs, dtype=np.float64).prod()
