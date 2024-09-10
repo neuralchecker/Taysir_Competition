@@ -2,3 +2,5 @@
 __pycache__/
 output_models/
 predicted_models/
+TAYSIR/data_caches/
+TAYSIR/wandb/
