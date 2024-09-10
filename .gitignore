@@ -4,3 +4,6 @@ output_models/
 predicted_models/
 TAYSIR/data_caches/
 TAYSIR/wandb/
+data_caches/
+wandb/
+tmp/

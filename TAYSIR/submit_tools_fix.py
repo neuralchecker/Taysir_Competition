@@ -12,10 +12,10 @@ logging.getLogger("mlflow").setLevel(logging.DEBUG)
 
 class func_to_class(mlflow.pyfunc.PythonModel):
     def __init__(self, func):
-        self.func = func
+        self._predict = func.predict
 
     def predict(self, context, model_input):
-        return self.func.predict(model_input)
+        return self._predict(model_input[1:])
 
 
 def save_function(func, alphabet_size, prefix):
@@ -41,7 +41,7 @@ def save_function(func, alphabet_size, prefix):
         zip_path = f"predicted_models/{prefix}{"-"}{guid}.zip"
     
         code_paths = list(Path().rglob('*.py'))
-        #code_paths = [PosixPath('wrapper.py')]
+        #code_paths = [PosixPath('fast_pdfa_wrapper.py')]
           
         mlflow.pyfunc.save_model(
             path=mlflow_path,

@@ -25,6 +25,79 @@ def predict(sequence, model):
             out = model(word)
             return (out.logits.argmax().item())
 
+def full_next_symbols_probas(sequence, model):   
+    return full_next_symbols_probas_batch([sequence],model)[0]   
+    if not hasattr(model, 'distilbert'):
+        value, hiddens = model.forward_lm(model.one_hot_encode(sequence))
+        return value.detach().numpy()
+    else: #Transformer
+        def make_future_masks(words:torch.Tensor):
+            masks = (words != 0)
+            b,l = masks.size()
+            #x = einops.einsum(masks, masks, "b i, b j -> b i j")
+            x = torch.einsum("bi,bj->bij",masks,masks)
+            x *= torch.ones(l,l, dtype=torch.bool, device=x.device).tril()
+            x += torch.eye(l,dtype=torch.bool, device=x.device)
+            return x.type(torch.int8)
+        def predict_next_symbols(model, word):
+            """
+            Args:
+                whole word (list): a complete sequence as a list of integers
+            Returns:
+                the predicted probabilities of the next ids for all prefixes (2-D ndarray)
+            """
+            word = [ [ a+1 for a in word ] ]
+            word = torch.IntTensor(word)
+            model.eval()
+            with torch.no_grad():
+                attention_mask = make_future_masks(word)
+                out = model.forward(word, attention_mask=attention_mask)
+                out = torch.nn.functional.softmax(out.logits[0], dim=1)
+                return out.detach().numpy()    
+        return predict_next_symbols(model, sequence)
+
+def full_next_symbols_probas_batch(sequences, model):      
+    if not hasattr(model, 'distilbert'):
+        sequences = torch.stack(list(map(lambda x: model.one_hot_encode(x), sequences)))             
+        value, hiddens = model.forward_lm(sequences)        
+        return value.detach().numpy()
+        
+    else: #Transformer
+        def make_future_masks(words:torch.Tensor):
+            masks = (words != 0)
+            b,l = masks.size()
+            #x = einops.einsum(masks, masks, "b i, b j -> b i j")
+            x = torch.einsum("bi,bj->bij",masks,masks)
+            x *= torch.ones(l,l, dtype=torch.bool, device=x.device).tril()
+            x += torch.eye(l,dtype=torch.bool, device=x.device)
+            return x.type(torch.int8)
+        def predict_next_symbols(model, words):
+            """
+            Args:
+                whole word (list): a complete sequence as a list of integers
+            Returns:
+                the predicted probabilities of the next ids for all prefixes (2-D ndarray)
+            """
+            words = [ [ a+1 for a in word ] for word in words]
+            words = torch.IntTensor(words)
+            model.eval()
+            with torch.no_grad():
+                attention_mask = make_future_masks(words)
+                out = model.forward(words, attention_mask=attention_mask)                
+                out = torch.nn.functional.softmax(out.logits, dim=2)   
+                return out.detach().numpy()  
+        return predict_next_symbols(model, sequences)
+
+
+def next_symbols_probas(sequence, model):     
+    return full_next_symbols_probas(sequence, model)[-1]
+
+import numpy as np
+def sequence_probability(sequence, model):
+    probs = full_next_symbols_probas(sequence, model)
+    probas_for_word = [probs[i,a+1] for i,a in enumerate(sequence)]
+    value = np.array(probas_for_word).prod()
+    return float(value)
 # We define a class in order to get alphabet, output alphabet and proccess query of PyTorch RNN. 
 # After this we send the model to the generic LStar teacher.
 
@@ -43,7 +116,7 @@ class PytorchInference(Model):
         self._name = name
         
     @property
-    def name(self) -> Alphabet:
+    def name(self) -> str:
         return self._name
     
     @property
