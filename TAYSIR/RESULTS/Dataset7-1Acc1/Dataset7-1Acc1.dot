@@ -1,0 +1,12 @@
+digraph "Dataset7-1Acc1" {
+	rankdir=LR size="8,5"
+	node [shape=doublecircle]
+	"ϵ"
+	node [shape=circle]
+	"ϵ" -> "ϵ" [label="Σ - {13, 18, 2, 22, 26, 33, 35, 42, 46, 47, 57, 6}"]
+	"ϵ" -> 13 [label="13, 18, 2, 22, 26, 33, 35, 42, 46, 47, 57, 6"]
+	13 -> 13 [label="Σ"]
+	node [shape=point]
+	start
+	start -> "ϵ"
+}

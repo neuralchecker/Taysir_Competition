@@ -1,5 +1,7 @@
 import torch
+torch.set_num_threads(4)
 import mlflow
+import pickle
 from utils import predict, PytorchInference
 import sys
 import pandas as pd
@@ -8,6 +10,7 @@ import numpy as np
 from wrapper import MlflowDFA
 from submit_tools_fix import save_function
 from pythautomata.utilities.uniform_word_sequence_generator import UniformWordSequenceGenerator
+from pythautomata.utilities.uniform_length_sequence_generator import UniformLengthSequenceGenerator
 from pymodelextractor.teachers.pac_comparison_strategy import PACComparisonStrategy
 from pymodelextractor.learners.observation_table_learners.translators.partial_dfa_translator \
     import PartialDFATranslator
@@ -21,6 +24,20 @@ warnings.filterwarnings('ignore')
 import traceback
 import wandb
 from fast_dfa_converter import FastDeterministicFiniteAutomatonConverter as Converter
+
+def get_alphabet(DATASET):
+    file = f"datasets/1.{DATASET}.taysir.valid.words"
+
+    alphabet = None
+
+    empty_sequence_len = 2
+    with open(file) as f:
+        a = f.readline()
+        headline = a.split(' ')
+        alphabet_size = int(headline[1].strip())
+        alphabet = Alphabet.from_strings([str(x) for x in range(alphabet_size - empty_sequence_len)])
+        
+    return alphabet
 
 def test_model(target_model, model, sequence_generator, sequence_amount = 1000):
     sequences = sequence_generator.generate_words(sequence_amount)
@@ -36,7 +53,7 @@ def persist_results(dataset, learning_result, max_extraction_time):
     extracted_model = learning_result.model
 
     result.update({ 
-                'Instance': dataset,
+                'Instance': 'Dataset: ' + str(dataset),
                 'Number of Extracted States': len(extracted_model.states) ,   
                 'EquivalenceQuery': learning_result.info['equivalence_queries_count'], 
                 'MembershipQuery': learning_result.info['membership_queries_count'], 
@@ -49,9 +66,8 @@ def persist_results(dataset, learning_result, max_extraction_time):
     wandb.finish()
     # SOON: history!
     
-def run_instance(dataset, params):
+def run_instance(DATASET, alphabet, params, counter, past_model_states_amount, observation_table, sigma, sequence_generator):
     TRACK = 1
-    DATASET = dataset
     max_extraction_time = params['max_extraction_time']
     max_sequence_len = params['max_sequence_len']
     min_sequence_len = params['min_sequence_len']
@@ -60,24 +76,10 @@ def run_instance(dataset, params):
     
     model_name = f"models/1.{DATASET}.taysir.model"
     model = mlflow.pytorch.load_model(model_name)
-    model.eval()
+    model.eval() 
 
-    file = f"datasets/1.{DATASET}.taysir.valid.words"
-
-    alphabet = None
-    sequences = []
-
-    empty_sequence_len = 2
-    with open(file) as f:
-        a = f.readline()
-        headline = a.split(' ')
-        alphabet_size = int(headline[1].strip())
-        alphabet = Alphabet.from_strings([str(x) for x in range(alphabet_size - empty_sequence_len)])     
-
-    name = "Track: " + str(TRACK) + " - DataSet: " + str(DATASET)
+    name = "DataSet: " + str(DATASET) + " - iteration: " + str(counter) + " - v"
     target_model = PytorchInference(alphabet, model, name)
-    sequence_generator = UniformWordSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
-                                                        min_seq_length=min_sequence_len)
     comparator = PACComparisonStrategy(target_model_alphabet = alphabet, epsilon = epsilon, delta = delta, 
                                    sequence_generator = sequence_generator)
     teacher = GeneralTeacher(target_model, comparator)
@@ -101,17 +103,18 @@ def run_instance(dataset, params):
         config=params
     )
 
-    res = learner.learn(teacher)
-    
-    if len(res.model.states) < 10:
-        res.model = PartialDFATranslator().translate(res.info['observation_table'], alphabet)
-        print("Changed Model")
+    res = learner.learn(teacher, observation_table)
 
-    res.model.name = "Dataset"+str(DATASET)+"-1Acc"
+    res.model.name = "Dataset"+str(DATASET)+"-1Acc" + str(counter)
     res.model.export()
     
+    observation_table = res.info['observation_table']
+    
+    with open('predicted_models/observation_table_' + str(counter) + '.pickle', 'wb') as handle:
+        pickle.dump(observation_table, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
     # Persist metrics of training
-    persist_results(dataset, res, max_extraction_time)
+    persist_results(DATASET, res, max_extraction_time)
 
     wandb.finish()
 
@@ -120,36 +123,61 @@ def run_instance(dataset, params):
     mlflow_dfa = fast_dfa
     save_function(mlflow_dfa, len(res.model.alphabet), target_model.name)
 
-    # Should we remove it?
     print("DATASET: " + str(DATASET) + " learned with " + str(res.info['equivalence_queries_count']) + 
           " equivalence queries and " + str(res.info['membership_queries_count']) + 
           " membership queries with a duration of " + str(res.info['duration']) + "s with " + str(len(res.model.states)) + " states")
+    print("min_sequence_len:", min_sequence_len)
+    print("max_sequence_len:", max_sequence_len)
     
-    counter = 0
-    for model in res.info['history']:
-        counter += 1
+    if past_model_states_amount < len(res.model.states) + sigma:
         results = []
         for i in range(10):
-            results.append(test_model(model, target_model, sequence_generator))
-        print("Model history " + str(counter) + " with error: " + str(np.mean(results)))
+            results.append(test_model(target_model, res.model, sequence_generator))
+
+        mean_error = np.mean(results) 
+        print("Model " + str(counter) + " with error: " + str(mean_error))
+    else:
+        mean_error = 1
+    
+    return len(res.model.states), observation_table, mean_error
     
 def run():
-    params = dict()
-    max_extraction_time = -1#3 * 60 * 60
-    max_sequence_len = 25
-    min_sequence_len = 17
-    epsilon = 0.04
-    delta = 0.01
+    dataset_to_run = 8
+    alphabet = get_alphabet(dataset_to_run)
+    past_model_states_amount = 0
+    counter = 0
+    max_extraction_time = 3 * 60 * 60
+    max_sequence_len = 1000
+    min_sequence_len = 200
+    epsilon = 0.1
+    delta = 0.1
+    sigma = 5
+    observation_table = None
+    sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
+                                                        min_seq_length=min_sequence_len)
     
-    # Choose datasets to run
-    params['DATASET_1'] = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
-                           "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
+    while True:
+        counter += 1
 
-    datasets_to_run = [1]
-    for ds in datasets_to_run:
+        # Choose datasets to run
+        params = {"max_extraction_time":max_extraction_time, "max_sequence_len":max_sequence_len, 
+                               "min_sequence_len":min_sequence_len, "epsilon":epsilon, "delta":delta}
+
         try:
-            dataset = f"DATASET_{ds}"
-            run_instance(ds, params[dataset])        
+            dataset = f"DATASET_{dataset_to_run}"
+            states_amount, observation_table, mean_error = run_instance(dataset_to_run, 
+                                                            alphabet, params,
+                                                            counter, past_model_states_amount,
+                                                            observation_table, sigma,
+                                                            sequence_generator)
+            if past_model_states_amount < states_amount + sigma:
+                past_model_states_amount = states_amount
+                
+            if mean_error < 0.1 and max_sequence_len < 550:
+                max_sequence_len += 50
+                min_sequence_len += 50
+                sequence_generator = UniformLengthSequenceGenerator(alphabet, max_seq_length=max_sequence_len,
+                                                        min_seq_length=min_sequence_len)
         except Exception as e:
             print("Run Instance Exception")
             print(type(e))

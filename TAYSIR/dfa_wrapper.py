@@ -8,7 +8,8 @@ class MlflowDFA():
         self.dfa = dfa
 
     def create_sequence(self, input_data: Union['Sequence', list[Symbol], tuple[Symbol], list[str], tuple[str], str, int, list[int], tuple[int]]) -> Sequence:
-    
+        #Take first and last symobl
+        input_data = input_data[1:-1]
         # Convert input_data to a list of Symbol objects if it's a list or tuple of strings
         if isinstance(input_data, (list, tuple)):
             if all(isinstance(item, str) for item in input_data):
